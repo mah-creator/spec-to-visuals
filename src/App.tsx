@@ -3,7 +3,8 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { useState } from "react";
+import React from "react";
+import { useAuth } from "./hooks/useAuth";
 
 // Pages
 import Login from "./pages/Login";
@@ -13,42 +14,28 @@ import AdminDashboard from "./pages/AdminDashboard";
 import ProjectWorkspace from "./pages/ProjectWorkspace";
 import NotFound from "./pages/NotFound";
 
-// Auth Context for mockup purposes
+// Auth Context
 export const AuthContext = React.createContext<{
   user: { id: string; name: string; email: string; role: 'admin' | 'freelancer' | 'customer' } | null;
-  login: (email: string, password: string, role: string) => void;
+  login: (credentials: { email: string; password: string }) => Promise<any>;
   logout: () => void;
+  loading: boolean;
 }>({
   user: null,
-  login: () => {},
+  login: async () => {},
   logout: () => {},
+  loading: false,
 });
-
-import React from "react";
 
 const queryClient = new QueryClient();
 
 const App = () => {
-  const [user, setUser] = useState<{ id: string; name: string; email: string; role: 'admin' | 'freelancer' | 'customer' } | null>(null);
-
-  const login = (email: string, password: string, role: string) => {
-    // Mock login for demo purposes
-    setUser({
-      id: '1',
-      name: role === 'freelancer' ? 'John Doe' : role === 'customer' ? 'Jane Smith' : 'Admin User',
-      email,
-      role: role as 'admin' | 'freelancer' | 'customer'
-    });
-  };
-
-  const logout = () => {
-    setUser(null);
-  };
+  const { user, login, logout, loading } = useAuth();
 
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <AuthContext.Provider value={{ user, login, logout }}>
+        <AuthContext.Provider value={{ user, login, logout, loading }}>
           <Toaster />
           <Sonner />
           <BrowserRouter>
