@@ -25,15 +25,33 @@ export const useAuth = () => {
       setLoading(true);
       const response = await apiClient.login(credentials);
       
-      apiClient.setToken(response.token);
-      setUser(response.user);
+      // Handle the actual response structure from your .NET API
+      if (response.token) {
+        apiClient.setToken(response.token);
+      }
       
-      toast({
-        title: "Login successful",
-        description: `Welcome back, ${response.user.name}!`,
-      });
-      
-      return response.user;
+      if (response.user) {
+        setUser(response.user);
+        toast({
+          title: "Login successful",
+          description: `Welcome back, ${response.user.name || response.user.email || 'User'}!`,
+        });
+        return response.user;
+      } else {
+        // If no user object, create a basic user from response
+        const user: User = {
+          id: response.userId || 'unknown',
+          name: response.name || response.userName || 'User',
+          email: response.email || credentials.email,
+          role: (response.role as 'admin' | 'freelancer' | 'customer') || 'customer'
+        };
+        setUser(user);
+        toast({
+          title: "Login successful",
+          description: `Welcome back, ${user.name}!`,
+        });
+        return user;
+      }
     } catch (error) {
       toast({
         variant: "destructive",

@@ -29,8 +29,15 @@ export interface User {
 }
 
 export interface LoginResponse {
-  token: string;
-  user: User;
+  token?: string;
+  user?: User;
+  // Additional fields that might come from .NET API
+  userId?: string;
+  name?: string;
+  userName?: string;
+  email?: string;
+  role?: string;
+  [key: string]: any; // Allow for unknown fields
 }
 
 export interface Project {
