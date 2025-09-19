@@ -45,7 +45,7 @@ export const useAuth = () => {
           id: response.userId || response.id || 'unknown',
           name: response.name || response.userName || response.fullName || 'User',
           email: response.email || credentials.email,
-          role: (response.role as 'admin' | 'freelancer' | 'customer') || 'customer'
+          role: (response.role?.toLowerCase() as 'admin' | 'freelancer' | 'customer') || 'customer'
         };
         console.log('Created user object:', user);
         setUser(user);
