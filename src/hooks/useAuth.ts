@@ -31,13 +31,18 @@ export const useAuth = () => {
       }
       
       if (response.user) {
-        setUser(response.user);
-        console.log('Login successful with user object:', response.user);
+        // Normalize the role to lowercase
+        const normalizedUser = {
+          ...response.user,
+          role: response.user.role?.toLowerCase() as 'admin' | 'freelancer' | 'customer'
+        };
+        setUser(normalizedUser);
+        console.log('Login successful with user object:', normalizedUser);
         toast({
           title: "Login successful",
-          description: `Welcome back, ${response.user.name || response.user.email || 'User'}!`,
+          description: `Welcome back, ${normalizedUser.name || normalizedUser.email || 'User'}!`,
         });
-        return response.user;
+        return normalizedUser;
       } else {
         // If no user object, create a basic user from response
         console.log('Creating user from response:', response);
