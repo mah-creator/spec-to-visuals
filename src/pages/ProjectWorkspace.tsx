@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { AuthContext } from "../App";
+import { useProject } from "@/hooks/useProjects";
+import { useTasks } from "@/hooks/useTasks";
 import { 
   ArrowLeft,
   Plus,
@@ -27,56 +29,33 @@ import { useNavigate, useParams } from "react-router-dom";
 const ProjectWorkspace = () => {
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
-  const { id } = useParams();
+  const { id } = useParams<{ id: string }>();
   const [newComment, setNewComment] = useState("");
   const [activeTab, setActiveTab] = useState("tasks");
+  
+  const { project, isLoading: projectLoading } = useProject(id);
+  const { tasks, isLoading: tasksLoading } = useTasks(id);
 
-  // Mock project data
-  const project = {
-    id: 1,
-    title: "E-commerce Website Redesign",
-    description: "Complete redesign of the company's e-commerce platform with modern UI/UX principles",
-    client: "TechCorp Inc.",
-    freelancer: "John Doe",
-    dueDate: "2024-02-15",
-    status: "in-progress",
-    progress: 67
-  };
+  if (projectLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-subtle flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
-  const tasks = [
-    {
-      id: 1,
-      title: "Homepage Design",
-      description: "Create modern homepage layout with hero section",
-      status: "completed",
-      dueDate: "2024-01-15",
-      assignee: "John Doe",
-      comments: [
-        { id: 1, author: "Jane Smith", message: "Looks great! Can we make the hero image a bit larger?", time: "2 hours ago" },
-        { id: 2, author: "John Doe", message: "Sure, I'll update that in the next iteration.", time: "1 hour ago" }
-      ]
-    },
-    {
-      id: 2,
-      title: "Product Catalog Layout",
-      description: "Design product listing and detail pages",
-      status: "in-progress",
-      dueDate: "2024-01-20",
-      assignee: "John Doe",
-      comments: [
-        { id: 1, author: "Jane Smith", message: "Please ensure mobile responsiveness", time: "1 day ago" }
-      ]
-    },
-    {
-      id: 3,
-      title: "Checkout Process",
-      description: "Streamline the checkout flow and payment integration",
-      status: "pending",
-      dueDate: "2024-01-25",
-      assignee: "John Doe",
-      comments: []
-    }
-  ];
+  if (!project) {
+    return (
+      <div className="min-h-screen bg-gradient-subtle flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold mb-4">Project Not Found</h1>
+          <Button onClick={() => navigate('/')}>Go Back</Button>
+        </div>
+      </div>
+    );
+  }
+
+  // Mock data for features not yet implemented in API
 
   const files = [
     { id: 1, name: "Homepage-Design-v2.figma", size: "2.4 MB", uploadedBy: "John Doe", date: "2 hours ago", type: "design" },
@@ -102,7 +81,7 @@ const ProjectWorkspace = () => {
     return variants[status] || 'bg-muted';
   };
 
-  const handleAddComment = (taskId: number) => {
+  const handleAddComment = (taskId: string) => {
     if (!newComment.trim()) return;
     // Here you would typically add the comment to the task
     setNewComment("");

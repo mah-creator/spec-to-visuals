@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { AuthContext } from "../App";
+import { useProjects } from "@/hooks/useProjects";
 import { 
   Plus, 
   Calendar, 
@@ -22,39 +23,12 @@ import { useNavigate } from "react-router-dom";
 const FreelancerDashboard = () => {
   const { user, logout } = useContext(AuthContext);
   const navigate = useNavigate();
+  const { projects, isLoading } = useProjects();
 
-  const projects = [
-    {
-      id: 1,
-      title: "E-commerce Website Redesign",
-      client: "TechCorp Inc.",
-      dueDate: "2024-02-15",
-      status: "in-progress",
-      tasksTotal: 12,
-      tasksCompleted: 8,
-      progress: 67
-    },
-    {
-      id: 2,
-      title: "Mobile App Development",
-      client: "StartupXYZ",
-      dueDate: "2024-03-01",
-      status: "planning",
-      tasksTotal: 20,
-      tasksCompleted: 3,
-      progress: 15
-    },
-    {
-      id: 3,
-      title: "Brand Identity Package",
-      client: "Creative Agency",
-      dueDate: "2024-01-30",
-      status: "review",
-      tasksTotal: 8,
-      tasksCompleted: 8,
-      progress: 100
-    }
-  ];
+  // Calculate stats from real data
+  const activeProjects = projects.filter(p => 
+    p.status === 'active' || p.status === 'in-progress'
+  ).length;
 
   const recentActivity = [
     { type: "task", message: "Task 'Homepage Design' marked as completed", time: "2 hours ago" },
@@ -122,7 +96,7 @@ const FreelancerDashboard = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Active Projects</p>
-                  <p className="text-2xl font-bold">3</p>
+                  <p className="text-2xl font-bold">{activeProjects}</p>
                 </div>
                 <BarChart3 className="w-8 h-8 text-primary" />
               </div>
@@ -178,44 +152,64 @@ const FreelancerDashboard = () => {
             </div>
             
             <div className="space-y-4">
-              {projects.map((project) => (
-                <Card 
-                  key={project.id} 
-                  className="border-0 shadow-md hover:shadow-lg transition-all cursor-pointer"
-                  onClick={() => navigate(`/project/${project.id}`)}
-                >
-                  <CardContent className="p-6">
-                    <div className="flex items-start justify-between mb-4">
-                      <div>
-                        <h3 className="font-semibold text-lg mb-1">{project.title}</h3>
-                        <p className="text-muted-foreground flex items-center gap-2">
-                          <Users className="w-4 h-4" />
-                          {project.client}
-                        </p>
-                      </div>
-                      <Badge className={getStatusBadge(project.status)}>
-                        {project.status.replace('-', ' ')}
-                      </Badge>
-                    </div>
-                    
-                    <div className="flex items-center justify-between text-sm text-muted-foreground mb-4">
-                      <span className="flex items-center gap-2">
-                        <Calendar className="w-4 h-4" />
-                        Due {project.dueDate}
-                      </span>
-                      <span>{project.tasksCompleted}/{project.tasksTotal} tasks</span>
-                    </div>
-                    
-                    <div className="w-full bg-muted rounded-full h-2">
-                      <div 
-                        className="bg-gradient-primary h-2 rounded-full transition-all"
-                        style={{ width: `${project.progress}%` }}
-                      ></div>
-                    </div>
-                    <p className="text-sm text-muted-foreground mt-2">{project.progress}% complete</p>
+              {isLoading ? (
+                <div className="space-y-4">
+                  {[1, 2, 3].map((i) => (
+                    <Card key={i} className="border-0 shadow-md animate-pulse">
+                      <CardContent className="p-6">
+                        <div className="h-4 bg-gray-200 rounded w-3/4 mb-4"></div>
+                        <div className="h-3 bg-gray-200 rounded w-1/2 mb-2"></div>
+                        <div className="h-2 bg-gray-200 rounded w-full"></div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              ) : projects.length === 0 ? (
+                <Card className="border-0 shadow-md">
+                  <CardContent className="p-6 text-center">
+                    <p className="text-muted-foreground">No projects found. Create your first project to get started!</p>
                   </CardContent>
                 </Card>
-              ))}
+              ) : (
+                projects.map((project) => (
+                  <Card 
+                    key={project.id} 
+                    className="border-0 shadow-md hover:shadow-lg transition-all cursor-pointer"
+                    onClick={() => navigate(`/project/${project.id}`)}
+                  >
+                    <CardContent className="p-6">
+                      <div className="flex items-start justify-between mb-4">
+                        <div>
+                          <h3 className="font-semibold text-lg mb-1">{project.title}</h3>
+                          <p className="text-muted-foreground flex items-center gap-2">
+                            <Users className="w-4 h-4" />
+                            {project.client || 'No client assigned'}
+                          </p>
+                        </div>
+                        <Badge className={getStatusBadge(project.status)}>
+                          {project.status.replace('-', ' ')}
+                        </Badge>
+                      </div>
+                      
+                      <div className="flex items-center justify-between text-sm text-muted-foreground mb-4">
+                        <span className="flex items-center gap-2">
+                          <Calendar className="w-4 h-4" />
+                          Due {project.dueDate ? new Date(project.dueDate).toLocaleDateString() : 'No due date'}
+                        </span>
+                        <span>{project.tasksCompleted || 0}/{project.tasksTotal || 0} tasks</span>
+                      </div>
+                      
+                      <div className="w-full bg-muted rounded-full h-2">
+                        <div 
+                          className="bg-gradient-primary h-2 rounded-full transition-all"
+                          style={{ width: `${project.progress || 0}%` }}
+                        ></div>
+                      </div>
+                      <p className="text-sm text-muted-foreground mt-2">{project.progress || 0}% complete</p>
+                    </CardContent>
+                  </Card>
+                ))
+              )}
             </div>
           </div>
 

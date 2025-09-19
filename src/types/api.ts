@@ -48,6 +48,14 @@ export interface Project {
   ownerId: string;
   createdAt: string;
   updatedAt: string;
+  // Additional fields for dashboard display
+  status?: 'active' | 'completed' | 'in-progress' | 'planning' | 'review';
+  progress?: number;
+  client?: string;
+  freelancer?: string;
+  tasksTotal?: number;
+  tasksCompleted?: number;
+  lastUpdate?: string;
 }
 
 export interface Task {
@@ -59,6 +67,14 @@ export interface Task {
   dueDate: string;
   createdAt: string;
   updatedAt: string;
+  // Additional fields for UI display
+  assignee?: string;
+  comments?: Array<{
+    id: number;
+    author: string;
+    message: string;
+    time: string;
+  }>;
 }
 
 export interface FileUploadRequest {
