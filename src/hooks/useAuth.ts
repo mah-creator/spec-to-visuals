@@ -32,6 +32,7 @@ export const useAuth = () => {
       
       if (response.user) {
         setUser(response.user);
+        console.log('Login successful with user object:', response.user);
         toast({
           title: "Login successful",
           description: `Welcome back, ${response.user.name || response.user.email || 'User'}!`,
@@ -39,16 +40,18 @@ export const useAuth = () => {
         return response.user;
       } else {
         // If no user object, create a basic user from response
+        console.log('Creating user from response:', response);
         const user: User = {
-          id: response.userId || 'unknown',
-          name: response.name || response.userName || 'User',
+          id: response.userId || response.id || 'unknown',
+          name: response.name || response.userName || response.fullName || 'User',
           email: response.email || credentials.email,
           role: (response.role as 'admin' | 'freelancer' | 'customer') || 'customer'
         };
+        console.log('Created user object:', user);
         setUser(user);
         toast({
           title: "Login successful",
-          description: `Welcome back, ${user.name}!`,
+          description: `Welcome back, ${user.name}! Role: ${user.role}`,
         });
         return user;
       }
