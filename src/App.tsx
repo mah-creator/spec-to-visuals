@@ -31,6 +31,10 @@ const queryClient = new QueryClient();
 
 const App = () => {
   const { user, login, logout, loading } = useAuth();
+  
+  console.log('App.tsx - Current user:', user);
+  console.log('App.tsx - User role:', user?.role);
+  console.log('App.tsx - Role type:', typeof user?.role);
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -41,9 +45,20 @@ const App = () => {
           <BrowserRouter>
             <Routes>
               <Route path="/" element={user ? (
-                user.role === 'freelancer' ? <FreelancerDashboard /> :
-                user.role === 'customer' ? <CustomerDashboard /> :
-                <AdminDashboard />
+                (() => {
+                  console.log('Routing decision for user:', user);
+                  console.log('Checking role:', user.role);
+                  if (user.role === 'freelancer') {
+                    console.log('Routing to FreelancerDashboard');
+                    return <FreelancerDashboard />;
+                  } else if (user.role === 'customer') {
+                    console.log('Routing to CustomerDashboard');
+                    return <CustomerDashboard />;
+                  } else {
+                    console.log('Routing to AdminDashboard (default)');
+                    return <AdminDashboard />;
+                  }
+                })()
               ) : <Login />} />
               <Route path="/login" element={<Login />} />
               <Route path="/freelancer" element={<FreelancerDashboard />} />
