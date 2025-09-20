@@ -82,3 +82,34 @@ export const useTask = (projectId: string | undefined, taskId: string | undefine
     error,
   };
 };
+
+export const useTaskComments = () => {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  const addCommentMutation = useMutation({
+    mutationFn: ({ projectId, taskId, comment }: { projectId: string; taskId: string; comment: string }) =>
+      apiClient.addTaskComment(projectId, taskId, comment),
+    onSuccess: (_, variables) => {
+      toast({
+        title: "Comment added",
+        description: "Your comment has been added successfully.",
+      });
+      // Invalidate the task query to refresh comments
+      queryClient.invalidateQueries({ queryKey: ['task', variables.projectId, variables.taskId] });
+      queryClient.invalidateQueries({ queryKey: ['tasks', variables.projectId] });
+    },
+    onError: (error: any) => {
+      toast({
+        variant: "destructive",
+        title: "Failed to add comment",
+        description: error.message || "An error occurred",
+      });
+    },
+  });
+
+  return {
+    addComment: addCommentMutation.mutate,
+    isAddingComment: addCommentMutation.isPending,
+  };
+};

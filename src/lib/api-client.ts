@@ -1,12 +1,14 @@
 import { 
   LoginRequest, 
   LoginResponse, 
+  SignupRequest,
   CreateProjectDto, 
   CreateTaskDto, 
   UpdateTaskStatusDto,
   Project,
   Task,
   FileUploadRequest,
+  FileResponse,
   ApiError 
 } from '@/types/api';
 
@@ -84,6 +86,13 @@ class ApiClient {
     });
   }
 
+  async signup(userData: SignupRequest): Promise<void> {
+    return this.request<void>('/api/Auth/signup', {
+      method: 'POST',
+      body: JSON.stringify(userData),
+    });
+  }
+
   // Project endpoints
   async getProjects(): Promise<Project[]> {
     return this.request<Project[]>('/api/Projects');
@@ -135,7 +144,7 @@ class ApiClient {
   }
 
   // File endpoints
-  async uploadFile(uploadData: FileUploadRequest): Promise<void> {
+  async uploadFile(uploadData: FileUploadRequest): Promise<FileResponse> {
     const formData = new FormData();
     formData.append('file', uploadData.file);
     formData.append('projectId', uploadData.projectId);
@@ -143,10 +152,21 @@ class ApiClient {
       formData.append('taskId', uploadData.taskId);
     }
 
-    return this.request<void>('/api/Files/upload', {
+    return this.request<FileResponse>('/api/Files/upload', {
       method: 'POST',
       headers: {}, // Don't set Content-Type for FormData
       body: formData,
+    });
+  }
+
+  async getTaskFiles(taskId: string): Promise<FileResponse[]> {
+    return this.request<FileResponse[]>(`/api/Files/task/${taskId}`);
+  }
+
+  async addTaskComment(projectId: string, taskId: string, comment: string): Promise<void> {
+    return this.request<void>(`/api/projects/${projectId}/Tasks/${taskId}/comment`, {
+      method: 'POST',
+      body: JSON.stringify(comment),
     });
   }
 

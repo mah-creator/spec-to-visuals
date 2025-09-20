@@ -4,6 +4,13 @@ export interface LoginRequest {
   password: string;
 }
 
+export interface SignupRequest {
+  email: string;
+  name: string;
+  password: string;
+  role: string;
+}
+
 export interface CreateProjectDto {
   title: string;
   description: string;
@@ -30,6 +37,7 @@ export interface User {
 
 export interface LoginResponse {
   token?: string;
+  expiresAt?: string;
   user?: User;
   // Additional fields that might come from .NET API
   userId?: string;
@@ -81,6 +89,21 @@ export interface FileUploadRequest {
   projectId: string;
   taskId?: string;
   file: File;
+}
+
+export interface FileResponse {
+  filename: string;
+  projectTitle: string;
+  size: number;
+  uploader: string;
+  uploadedAt: string;
+  path: string;
+}
+
+export interface AddCommentRequest {
+  taskId: string;
+  projectId: string;
+  comment: string;
 }
 
 export class ApiError extends Error {
