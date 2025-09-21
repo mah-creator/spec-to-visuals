@@ -10,6 +10,7 @@ import { useProject } from "@/hooks/useProjects";
 import { useTasks } from "@/hooks/useTasks";
 import { useTaskFiles } from "@/hooks/useFiles";
 import { API_BASE_URL } from "@/lib/api-client";
+import FileUploadDialog from "@/components/FileUploadDialog";
 
 import { 
   ArrowLeft,
@@ -35,6 +36,7 @@ const ProjectWorkspace = () => {
   const { id } = useParams<{ id: string }>();
   const [newComment, setNewComment] = useState("");
   const [activeTab, setActiveTab] = useState("tasks");
+  const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
   
   const { project, isLoading: projectLoading } = useProject(id);
   const { tasks, isLoading: tasksLoading } = useTasks(id);
@@ -259,7 +261,11 @@ const ProjectWorkspace = () => {
           <div className="space-y-6">
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-semibold">Project Files</h2>
-              <Button className="bg-gradient-primary">
+              <Button 
+                className="bg-gradient-primary"
+                onClick={() => setUploadDialogOpen(true)}
+                disabled={!selectedTaskId}
+              >
                 <Upload className="w-4 h-4 mr-2" />
                 Upload File
               </Button>
@@ -304,6 +310,17 @@ const ProjectWorkspace = () => {
               </CardContent>
             </Card>
           </div>
+        )}
+
+        {/* File Upload Dialog */}
+        {selectedTaskId && (
+          <FileUploadDialog
+            open={uploadDialogOpen}
+            onOpenChange={setUploadDialogOpen}
+            projectId={id!}
+            taskId={selectedTaskId}
+            taskTitle={tasks.find(task => task.id === selectedTaskId)?.title || "Unknown Task"}
+          />
         )}
       </div>
     </div>
