@@ -208,7 +208,7 @@ const CustomerDashboard = () => {
                               <div>
                                 <p className="font-medium">{file.filename}</p>
                                 <p className="text-sm text-muted-foreground">
-                                  {`${Math.round(file.size / 1024)}} KB • Uploaded by ${file.uploader} • ${new Date().getUTCHours() - new Date(file.uploadedAt).getUTCHours()} hours ago`}
+                                  {`${Math.round(file.size / 1024)} KB • Uploaded by ${file.uploader} • ${new Date().getUTCHours() - new Date(file.uploadedAt).getUTCHours()} hours ago`}
                                 </p>
                               </div>
                             </div>

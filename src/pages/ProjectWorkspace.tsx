@@ -124,7 +124,7 @@ const ProjectWorkspace = () => {
                 <h3 className="font-semibold mb-2">Timeline</h3>
                 <p className="text-muted-foreground flex items-center gap-2">
                   <Calendar className="w-4 h-4" />
-                  Due {project.dueDate}
+                  Due {project.dueDate ? new Date(project.dueDate).toLocaleDateString() : 'No due date'}
                 </p>
               </div>
               <div>
@@ -211,7 +211,7 @@ const ProjectWorkspace = () => {
                     <div className="flex items-center gap-4 text-sm text-muted-foreground mb-4">
                       <span className="flex items-center gap-2">
                         <Calendar className="w-4 h-4" />
-                        Due {task.dueDate}
+                        Due {task.dueDate ? new Date(task.dueDate).toLocaleDateString() : 'No due date'}
                       </span>
                       <span className="flex items-center gap-2">
                         <Users className="w-4 h-4" />
@@ -235,7 +235,7 @@ const ProjectWorkspace = () => {
                             <div className="flex-1 bg-muted/50 rounded-lg p-3">
                               <div className="flex items-center justify-between mb-1">
                                 <span className="font-medium text-sm">{comment.author}</span>
-                                <span className="text-xs text-muted-foreground">{comment.time}</span>
+                                <span className="text-xs text-muted-foreground">{new Date(comment.time).toLocaleDateString()}</span>
                               </div>
                               <p className="text-sm">{comment.message}</p>
                             </div>
