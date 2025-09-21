@@ -22,6 +22,23 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
+function getTimeDifference(targetDate: Date): string {
+  const now = new Date().getTime();
+  const target = new Date(targetDate).getTime();
+  const difference = now - target;
+
+  const seconds = Math.floor(difference / 1000);
+  const minutes = Math.floor(difference / (1000 * 60));
+  const hours = Math.floor(difference / (1000 * 60 * 60));
+  const days = Math.floor(difference / (1000 * 60 * 60 * 24));
+
+  if (days > 0) return `${days} day${days > 1 ? "s" : ""}`;
+  if (hours > 0) return `${hours} hour${hours > 1 ? "s" : ""}`;
+  if (minutes > 0) return `${minutes} minute${minutes > 1 ? "s" : ""}`;
+  return `${seconds} second${seconds !== 1 ? "s" : ""}`;
+}
+
+
 const CustomerDashboard = () => {
   const { user, logout } = useContext(AuthContext);
   const navigate = useNavigate();
@@ -208,11 +225,11 @@ const CustomerDashboard = () => {
                               <div>
                                 <p className="font-medium">{file.filename}</p>
                                 <p className="text-sm text-muted-foreground">
-                                  {`${Math.round(file.size / 1024)} KB • Uploaded by ${file.uploader} • ${new Date().getUTCHours() - new Date(file.uploadedAt).getUTCHours()} hours ago`}
+                                  {file.size < (1024**2) ? `${Math.round(file.size / 1024)} KB` : `${(file.size / (1024**2.0)).toFixed(2)} MB`}  • Uploaded by {file.uploader} • {getTimeDifference(new Date(`${file.uploadedAt}Z`))}
                                 </p>
                               </div>
                             </div>
-                            <a href={`${API_BASE_URL}/${file.path}`}>
+                            <a href={`${API_BASE_URL}/${file.path}`} target="_blank">
                               <Button variant="ghost" size="sm">
                                 <Download className="w-4 h-4" />
                             </Button>

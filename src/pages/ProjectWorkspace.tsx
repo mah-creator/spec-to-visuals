@@ -309,7 +309,7 @@ const ProjectWorkspace = () => {
                             </p>
                           </div>
                         </div>
-                        <a href={`${API_BASE_URL}/${file.path}`}>
+                        <a href={`${API_BASE_URL}/${file.path}`} target="_blank">
                           <Button variant="ghost" size="sm">
                             <Download className="w-4 h-4" />
                         </Button>
