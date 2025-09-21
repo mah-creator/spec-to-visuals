@@ -160,14 +160,44 @@ class ApiClient {
       formData.append('taskId', uploadData.taskId);
     }
 
-    return this.request<FileResponse>('/api/Files/upload', {
+    const url = `${API_BASE_URL}/api/Files/upload`;
+    const token = this.getToken();
+
+    const config: RequestInit = {
       method: 'POST',
       headers: {
-        // Don't set Content-Type for FormData, but preserve other headers like Authorization
-        'Content-Type': undefined,
+        ...(token && { Authorization: `Bearer ${token}` }),
+        // Don't set Content-Type for FormData - let browser set it with boundary
       },
       body: formData,
-    });
+    };
+
+    try {
+      const response = await fetch(url, config);
+      
+      if (!response.ok) {
+        const errorData = await response.text();
+        throw new ApiError({
+          message: errorData || `HTTP error! status: ${response.status}`,
+          status: response.status,
+        });
+      }
+
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        return await response.json();
+      }
+      
+      return response.text() as unknown as FileResponse;
+    } catch (error) {
+      if (error instanceof ApiError) {
+        throw error;
+      }
+      throw new ApiError({
+        message: error instanceof Error ? error.message : 'Network error',
+        status: 0,
+      });
+    }
   }
 
   async getTaskFiles(taskId: string): Promise<FileResponse[]> {
