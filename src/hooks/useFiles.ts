@@ -21,6 +21,23 @@ export const useTaskFiles = (taskId: string) => {
   };
 };
 
+export const useRecentFiles = () => {
+  const {
+    data: files = [],
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ['recent-files'],
+    queryFn: () => apiClient.getRecentFiles(),
+  });
+
+  return {
+    files,
+    isLoading,
+    error,
+  };
+};
+
 export const useProjectFiles = (projectId: string) => {
   const {
     data: files = [],
@@ -28,7 +45,7 @@ export const useProjectFiles = (projectId: string) => {
     error,
   } = useQuery({
     queryKey: ['project-files', projectId],
-    queryFn: () => apiClient.getProjectRecentFiles(projectId),
+    queryFn: () => apiClient.getProjectFiles(projectId),
     enabled: !!projectId,
   });
 

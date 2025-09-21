@@ -5,7 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { AuthContext } from "../App";
 import { useProjects } from "@/hooks/useProjects";
-import { useProjectFiles, useTaskFiles } from "@/hooks/useFiles";
+import { useRecentFiles, useTaskFiles } from "@/hooks/useFiles";
 import { API_BASE_URL } from "@/lib/api-client";
 import { 
   Calendar, 
@@ -44,11 +44,6 @@ const CustomerDashboard = () => {
   const navigate = useNavigate();
   const { projects, isLoading } = useProjects();
 
-  const recentFiles = [
-    { name: "Homepage-Design-v2.figma", project: "E-commerce Website", uploadedBy: "John Doe", date: "2 hours ago" },
-    { name: "Logo-Concepts.pdf", project: "Brand Identity", uploadedBy: "Sarah Wilson", date: "1 day ago" },
-    { name: "Style-Guide.pdf", project: "Brand Identity", uploadedBy: "Sarah Wilson", date: "2 days ago" }
-  ];
 
   const notifications = [
     { type: "task", message: "Task 'Homepage Design' has been completed", time: "2 hours ago", project: "E-commerce Website" },
@@ -72,8 +67,7 @@ const CustomerDashboard = () => {
     );
   };
 
-  const selectedProjectId = projects.length > 0 ? projects[0].id : undefined; // Use first task for demo
-  const { files, isLoading: filesLoading } = useProjectFiles(selectedProjectId || "");
+  const { files: recentFiles, isLoading: filesLoading } = useRecentFiles();
 
   return (
     <div className="min-h-screen bg-gradient-subtle">
@@ -209,14 +203,14 @@ const CustomerDashboard = () => {
                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
                         <p className="text-muted-foreground mt-2">Loading files...</p>
                       </div>
-                    ) : files.length === 0 ? (
+                    ) : recentFiles.length === 0 ? (
                       <div className="text-center py-8">
                         <FileText className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
                         <p className="text-muted-foreground">No files uploaded yet</p>
                       </div>
                     ) : (
                       <div className="space-y-4">
-                        {files.map((file, index) => (
+                        {recentFiles.map((file, index) => (
                           <div key={index} className="flex items-center justify-between p-4 rounded-lg hover:bg-muted/50 transition-colors">
                             <div className="flex items-center gap-3">
                               <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">

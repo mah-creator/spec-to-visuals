@@ -204,8 +204,12 @@ class ApiClient {
     return this.request<FileResponse[]>(`/api/Files/task/${taskId}`);
   }
 
-  async getProjectRecentFiles(projectId: string): Promise<FileResponse[]> {
-    return this.request<FileResponse[]>(`/api/Files/project/${projectId}/recent`);
+  async getRecentFiles(): Promise<FileResponse[]> {
+    return this.request<FileResponse[]>(`/api/Files/recent`);
+  }
+
+  async getProjectFiles(projectId: string): Promise<FileResponse[]> {
+    return this.request<FileResponse[]>(`/api/Files/project/${projectId}`);
   }
 
   async addTaskComment(projectId: string, taskId: string, comment: string): Promise<void> {

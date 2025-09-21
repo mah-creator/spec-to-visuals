@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { AuthContext } from "../App";
 import { useProject } from "@/hooks/useProjects";
 import { useTasks } from "@/hooks/useTasks";
-import { useTaskFiles } from "@/hooks/useFiles";
+import { useProjectFiles, useTaskFiles } from "@/hooks/useFiles";
 import { API_BASE_URL } from "@/lib/api-client";
 import FileUploadDialog from "@/components/FileUploadDialog";
 
@@ -42,8 +42,8 @@ const ProjectWorkspace = () => {
   const { project, isLoading: projectLoading } = useProject(id);
   const { tasks, isLoading: tasksLoading } = useTasks(id);
 
-  const selectedTaskId = tasks.length > 0 ? tasks[0].id : undefined; // Use first task for demo
-  const { files, isLoading: filesLoading } = useTaskFiles(selectedTaskId || "");
+  var selectedTaskId: string;
+  const { files: projectFiles, isLoading: filesLoading } = useProjectFiles(id || "");
 
   if (projectLoading) {
     return (
@@ -289,14 +289,14 @@ const ProjectWorkspace = () => {
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
                     <p className="text-muted-foreground mt-2">Loading files...</p>
                   </div>
-                ) : files.length === 0 ? (
+                ) : projectFiles.length === 0 ? (
                   <div className="text-center py-8">
                     <FileText className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
                     <p className="text-muted-foreground">No files uploaded yet</p>
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    {files.map((file, index) => (
+                    {projectFiles.map((file, index) => (
                       <div key={index} className="flex items-center justify-between p-4 rounded-lg hover:bg-muted/50 transition-colors">
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
