@@ -162,7 +162,10 @@ class ApiClient {
 
     return this.request<FileResponse>('/api/Files/upload', {
       method: 'POST',
-      headers: {}, // Don't set Content-Type for FormData
+      headers: {
+        // Don't set Content-Type for FormData, but preserve other headers like Authorization
+        'Content-Type': undefined,
+      },
       body: formData,
     });
   }
