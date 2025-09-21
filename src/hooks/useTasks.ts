@@ -83,6 +83,23 @@ export const useTask = (projectId: string | undefined, taskId: string | undefine
   };
 };
 
+export const useCompletedTasks = () => {
+  const {
+    data: task,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ['completed-user-task'],
+    queryFn: () => apiClient.getCompletedTasks(),
+  });
+
+  return {
+    task,
+    isLoading,
+    error,
+  };
+};
+
 export const useTaskComments = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();

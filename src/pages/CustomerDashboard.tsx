@@ -5,6 +5,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { AuthContext } from "../App";
 import { useProjects } from "@/hooks/useProjects";
+import { useProjectFiles, useTaskFiles } from "@/hooks/useFiles";
+import { API_BASE_URL } from "@/lib/api-client";
 import { 
   Calendar, 
   Clock, 
@@ -52,6 +54,9 @@ const CustomerDashboard = () => {
       </Badge>
     );
   };
+
+  const selectedProjectId = projects.length > 0 ? projects[0].id : undefined; // Use first task for demo
+  const { files, isLoading: filesLoading } = useProjectFiles(selectedProjectId || "");
 
   return (
     <div className="min-h-screen bg-gradient-subtle">
@@ -182,28 +187,42 @@ const CustomerDashboard = () => {
               <h3 className="text-xl font-semibold mb-4">Recent Files</h3>
               <Card className="border-0 shadow-md">
                 <CardContent className="p-6">
-                  <div className="space-y-4">
-                    {recentFiles.map((file, index) => (
-                      <div key={index} className="flex items-center justify-between p-3 rounded-lg hover:bg-muted/50 transition-colors">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
-                            <FileText className="w-5 h-5 text-primary" />
-                          </div>
-                          <div>
-                            <p className="font-medium">{file.name}</p>
-                            <p className="text-sm text-muted-foreground">
-                              {file.project} • {file.uploadedBy} • {file.date}
-                            </p>
-                          </div>
-                        </div>
-                        <Button variant="ghost" size="sm">
-                          <Download className="w-4 h-4" />
-                        </Button>
+                    {filesLoading ? (
+                      <div className="text-center py-8">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+                        <p className="text-muted-foreground mt-2">Loading files...</p>
                       </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
+                    ) : files.length === 0 ? (
+                      <div className="text-center py-8">
+                        <FileText className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
+                        <p className="text-muted-foreground">No files uploaded yet</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        {files.map((file, index) => (
+                          <div key={index} className="flex items-center justify-between p-4 rounded-lg hover:bg-muted/50 transition-colors">
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+                                <FileText className="w-5 h-5 text-primary" />
+                              </div>
+                              <div>
+                                <p className="font-medium">{file.filename}</p>
+                                <p className="text-sm text-muted-foreground">
+                                  {`${Math.round(file.size / 1024)}} KB • Uploaded by ${file.uploader} • ${new Date().getUTCHours() - new Date(file.uploadedAt).getUTCHours()} hours ago`}
+                                </p>
+                              </div>
+                            </div>
+                            <a href={`${API_BASE_URL}/${file.path}`}>
+                              <Button variant="ghost" size="sm">
+                                <Download className="w-4 h-4" />
+                            </Button>
+                            </a>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
             </div>
           </div>
 

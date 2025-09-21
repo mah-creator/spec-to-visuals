@@ -9,6 +9,8 @@ import { AuthContext } from "../App";
 import { useProject } from "@/hooks/useProjects";
 import { useTasks } from "@/hooks/useTasks";
 import { useTaskFiles } from "@/hooks/useFiles";
+import { API_BASE_URL } from "@/lib/api-client";
+
 import { 
   ArrowLeft,
   Plus,
@@ -37,6 +39,9 @@ const ProjectWorkspace = () => {
   const { project, isLoading: projectLoading } = useProject(id);
   const { tasks, isLoading: tasksLoading } = useTasks(id);
 
+  const selectedTaskId = tasks.length > 0 ? tasks[0].id : undefined; // Use first task for demo
+  const { files, isLoading: filesLoading } = useTaskFiles(selectedTaskId || "");
+
   if (projectLoading) {
     return (
       <div className="min-h-screen bg-gradient-subtle flex items-center justify-center">
@@ -55,10 +60,6 @@ const ProjectWorkspace = () => {
       </div>
     );
   }
-
-  // Get files for the selected task (if any)
-  const selectedTaskId = tasks.length > 0 ? tasks[0].id : undefined; // Use first task for demo
-  const { files, isLoading: filesLoading } = useTaskFiles(selectedTaskId || "");
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -101,7 +102,7 @@ const ProjectWorkspace = () => {
               </p>
             </div>
             <Badge className={getStatusBadge(project.status)}>
-              {project.status.replace('-', ' ')}
+              {project.status}
             </Badge>
           </div>
         </div>
@@ -291,9 +292,11 @@ const ProjectWorkspace = () => {
                             </p>
                           </div>
                         </div>
-                        <Button variant="ghost" size="sm">
-                          <Download className="w-4 h-4" />
+                        <a href={`${API_BASE_URL}/${file.path}`}>
+                          <Button variant="ghost" size="sm">
+                            <Download className="w-4 h-4" />
                         </Button>
+                        </a>
                       </div>
                     ))}
                   </div>

@@ -57,7 +57,7 @@ export interface Project {
   createdAt: string;
   updatedAt: string;
   // Additional fields for dashboard display
-  status?: 'active' | 'completed' | 'in-progress' | 'planning' | 'review';
+  status?: 'Active' | 'Completed' | 'Deleted';
   progress?: number;
   client?: string;
   freelancer?: string;

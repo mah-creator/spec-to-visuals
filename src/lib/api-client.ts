@@ -12,7 +12,7 @@ import {
   ApiError 
 } from '@/types/api';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://localhost:7001';
+export const API_BASE_URL = import.meta.env.REACT_APP_API_URL || 'http://localhost:56545';
 
 class ApiClient {
   private token: string | null = null;
@@ -121,6 +121,10 @@ class ApiClient {
     return this.request<Task[]>(`/api/projects/${projectId}/Tasks`);
   }
 
+  async getCompletedTasks(): Promise<Task[]> {
+    return (await this.request<Task[]>(`/api/projects/completed`)).filter(t => t.status == status);
+  }
+
   async getTask(projectId: string, taskId: string): Promise<Task> {
     return this.request<Task>(`/api/projects/${projectId}/Tasks/${taskId}`);
   }
@@ -161,6 +165,10 @@ class ApiClient {
 
   async getTaskFiles(taskId: string): Promise<FileResponse[]> {
     return this.request<FileResponse[]>(`/api/Files/task/${taskId}`);
+  }
+
+  async getProjectRecentFiles(projectId: string): Promise<FileResponse[]> {
+    return this.request<FileResponse[]>(`/api/Files/project/${projectId}/recent`);
   }
 
   async addTaskComment(projectId: string, taskId: string, comment: string): Promise<void> {

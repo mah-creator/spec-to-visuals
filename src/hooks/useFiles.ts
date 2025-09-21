@@ -21,6 +21,24 @@ export const useTaskFiles = (taskId: string) => {
   };
 };
 
+export const useProjectFiles = (projectId: string) => {
+  const {
+    data: files = [],
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ['project-files', projectId],
+    queryFn: () => apiClient.getProjectRecentFiles(projectId),
+    enabled: !!projectId,
+  });
+
+  return {
+    files,
+    isLoading,
+    error,
+  };
+};
+
 export const useFileUpload = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();

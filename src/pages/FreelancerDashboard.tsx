@@ -19,6 +19,7 @@ import {
   TrendingUp
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useCompletedTasks, useTask, useTasksByStatus } from "@/hooks/useTasks";
 
 const FreelancerDashboard = () => {
   const { user, logout } = useContext(AuthContext);
@@ -27,8 +28,10 @@ const FreelancerDashboard = () => {
 
   // Calculate stats from real data
   const activeProjects = projects.filter(p => 
-    p.status === 'active' || p.status === 'in-progress'
+    p.status === 'Active'
   ).length;
+
+  const completedTasks = useCompletedTasks()?.task?.length ?? 0;
 
   const recentActivity = [
     { type: "task", message: "Task 'Homepage Design' marked as completed", time: "2 hours ago" },
@@ -108,7 +111,7 @@ const FreelancerDashboard = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Tasks Completed</p>
-                  <p className="text-2xl font-bold">19</p>
+                  <p className="text-2xl font-bold">{`${completedTasks}`}</p>
                 </div>
                 <CheckCircle className="w-8 h-8 text-success" />
               </div>
