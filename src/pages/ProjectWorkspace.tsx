@@ -37,6 +37,7 @@ const ProjectWorkspace = () => {
   const [newComment, setNewComment] = useState("");
   const [activeTab, setActiveTab] = useState("tasks");
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
+  const [selectedTaskForUpload, setSelectedTaskForUpload] = useState<string | null>(null);
   
   const { project, isLoading: projectLoading } = useProject(id);
   const { tasks, isLoading: tasksLoading } = useTasks(id);
@@ -191,6 +192,16 @@ const ProjectWorkspace = () => {
                         <Badge className={getStatusBadge(task.status)}>
                           {task.status.replace('-', ' ')}
                         </Badge>
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => {
+                            setSelectedTaskForUpload(task.id);
+                            setUploadDialogOpen(true);
+                          }}
+                        >
+                          <Upload className="w-4 h-4" />
+                        </Button>
                         <Button variant="ghost" size="sm">
                           <MoreHorizontal className="w-4 h-4" />
                         </Button>
@@ -313,13 +324,16 @@ const ProjectWorkspace = () => {
         )}
 
         {/* File Upload Dialog */}
-        {selectedTaskId && (
+        {(selectedTaskForUpload || selectedTaskId) && (
           <FileUploadDialog
             open={uploadDialogOpen}
-            onOpenChange={setUploadDialogOpen}
+            onOpenChange={(open) => {
+              setUploadDialogOpen(open);
+              if (!open) setSelectedTaskForUpload(null);
+            }}
             projectId={id!}
-            taskId={selectedTaskId}
-            taskTitle={tasks.find(task => task.id === selectedTaskId)?.title || "Unknown Task"}
+            taskId={selectedTaskForUpload || selectedTaskId!}
+            taskTitle={tasks.find(task => task.id === (selectedTaskForUpload || selectedTaskId))?.title || "Unknown Task"}
           />
         )}
       </div>
