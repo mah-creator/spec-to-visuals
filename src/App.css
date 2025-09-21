@@ -1,3 +1,17 @@
+@keyframes progressLoad {
+  from {
+    width: 0%;
+  }
+  to {
+    width: 100%;
+  }
+}
+
+.animate-progress {
+  animation: progressLoad 1s ease-out forwards;
+  transform-origin: left;
+}
+
 #root {
   max-width: 1280px;
   margin: 0 auto;

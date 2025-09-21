@@ -43,10 +43,8 @@ const FreelancerDashboard = () => {
 
   const getStatusBadge = (status: string) => {
     const variants: Record<string, string> = {
-      'in-progress': 'bg-primary/10 text-primary',
-      'planning': 'bg-warning/10 text-warning',
-      'review': 'bg-success/10 text-success',
-      'completed': 'bg-success/10 text-success'
+      'Active': 'bg-primary/10 text-primary',
+      'Completed': 'bg-success/10 text-success'
     };
     return variants[status] || 'bg-muted';
   };
@@ -205,11 +203,11 @@ const FreelancerDashboard = () => {
                       
                       <div className="w-full bg-muted rounded-full h-2">
                         <div 
-                          className="bg-gradient-primary h-2 rounded-full transition-all"
-                          style={{ width: `${project.progress || 0}%` }}
+                          className="bg-blue-500 h-2 rounded-full transition-all duration-300"
+                          style={{ width: `${project.progress * 100 || 0}%` }}
                         ></div>
                       </div>
-                      <p className="text-sm text-muted-foreground mt-2">{project.progress || 0}% complete</p>
+                      <p className="text-sm text-muted-foreground mt-2">{(project.progress*100).toPrecision(3) || 0}% complete</p>
                     </CardContent>
                   </Card>
                 ))

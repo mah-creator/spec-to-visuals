@@ -105,7 +105,8 @@ const FileUploadDialog = ({
             <Button
               onClick={handleUpload}
               disabled={!selectedFile || isUploading}
-              className="bg-gradient-primary"
+              className="text-blue-500 bg-white hover:bg-blue-500 hover:text-white hover:from-white hover:to-blue-500 transition-all duration-200"
+              // className="text-white hover:bg-white hover:text-blue-500 hover:bg-gradient-to-r hover:from-white hover:to-white transition-all duration-200"
             >
               {isUploading ? "Uploading..." : "Upload File"}
             </Button>

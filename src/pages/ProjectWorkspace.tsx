@@ -1,4 +1,4 @@
-import { useState, useContext } from "react";
+import { useState, useContext, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -11,6 +11,9 @@ import { useTasks } from "@/hooks/useTasks";
 import { useProjectFiles, useTaskFiles } from "@/hooks/useFiles";
 import { API_BASE_URL } from "@/lib/api-client";
 import FileUploadDialog from "@/components/FileUploadDialog";
+import { cn } from "@/lib/utils"; // Common path for cn utility
+
+
 
 import { 
   ArrowLeft,
@@ -28,6 +31,7 @@ import {
   AlertCircle,
   MoreHorizontal
 } from "lucide-react";
+
 import { useNavigate, useParams } from "react-router-dom";
 
 const ProjectWorkspace = () => {
@@ -41,7 +45,18 @@ const ProjectWorkspace = () => {
   
   const { project, isLoading: projectLoading } = useProject(id);
   const { tasks, isLoading: tasksLoading } = useTasks(id);
-
+  
+  const [animatedProgress, setAnimatedProgress] = useState(0);
+  
+  useEffect(() => {
+    // Start animation after component mounts
+    const timer = setTimeout(() => {
+      setAnimatedProgress(project?.progress * 100 || 0);
+    }, 100);
+    
+    return () => clearTimeout(timer);
+  }, [project?.progress || 0]);
+  
   var selectedTaskId: string;
   const { files: projectFiles, isLoading: filesLoading } = useProjectFiles(id || "");
 
@@ -66,18 +81,26 @@ const ProjectWorkspace = () => {
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'completed': return <CheckCircle className="w-4 h-4 text-success" />;
-      case 'in-progress': return <Timer className="w-4 h-4 text-primary" />;
-      case 'pending': return <AlertCircle className="w-4 h-4 text-muted-foreground" />;
+      case 'Done': return <CheckCircle className="w-4 h-4 text-success" />;
+      case 'InProgress': return <Timer className="w-4 h-4 text-primary" />;
+      case 'Todo': return <AlertCircle className="w-4 h-4 text-warning" />;
       default: return <AlertCircle className="w-4 h-4 text-muted-foreground" />;
     }
   };
 
-  const getStatusBadge = (status: string) => {
+  const getProjectStatusBadge = (status: string) => {
     const variants: Record<string, string> = {
-      'completed': 'bg-success/10 text-success',
-      'in-progress': 'bg-primary/10 text-primary',
-      'pending': 'bg-muted/50 text-muted-foreground'
+      'Completed': 'bg-success/10 text-success',
+      'Active': 'bg-primary/10 text-primary',
+    };
+    return variants[status] || 'bg-muted';
+  };
+
+  const getTaskStatusBadge = (status: string) => {
+    const variants: Record<string, string> = {
+      'Done': 'bg-success/10 text-success',
+      'InProgress': 'bg-primary/10 text-primary',
+      'Todo': 'bg-warning/10 text-warning',
     };
     return variants[status] || 'bg-muted';
   };
@@ -104,7 +127,7 @@ const ProjectWorkspace = () => {
                 {user?.role === 'freelancer' ? project.client : project.freelancer}
               </p>
             </div>
-            <Badge className={getStatusBadge(project.status)}>
+            <Badge className={getProjectStatusBadge(project.status)}>
               {project.status}
             </Badge>
           </div>
@@ -130,13 +153,22 @@ const ProjectWorkspace = () => {
               <div>
                 <h3 className="font-semibold mb-2">Progress</h3>
                 <div className="space-y-2">
+                  {/* <div className="w-full bg-muted rounded-full h-2">
+                    <div 
+                      className="bg-blue-500 h-2 rounded-full transition-all duration-300"
+                      style={{ width: `${project.progress * 100 || 0}%` }}
+                    ></div>
+                  </div> */}
+                  
                   <div className="w-full bg-muted rounded-full h-2">
                     <div 
-                      className="bg-gradient-primary h-2 rounded-full transition-all"
-                      style={{ width: `${project.progress}%` }}
+                      className="bg-blue-500 h-2 rounded-full transition-all duration-1000 ease-out"
+                      style={{ 
+                        width: `${animatedProgress}%`,
+                      }}
                     ></div>
                   </div>
-                  <p className="text-sm text-primary font-medium">{project.progress}% complete</p>
+                  <p className="text-sm text-primary font-medium">{(project.progress*100).toPrecision(3)}% complete</p>
                 </div>
               </div>
             </div>
@@ -144,7 +176,7 @@ const ProjectWorkspace = () => {
         </Card>
 
         {/* Tabs */}
-        <div className="flex gap-1 mb-6 bg-muted p-1 rounded-lg w-fit">
+        {/* <div className="flex gap-1 mb-6 bg-muted p-1 rounded-lg w-fit">
           <Button
             variant={activeTab === "tasks" ? "default" : "ghost"}
             size="sm"
@@ -161,7 +193,32 @@ const ProjectWorkspace = () => {
           >
             Files
           </Button>
-        </div>
+        </div> */}
+
+      <div className="flex gap-1 mb-6 bg-muted p-1 rounded-lg w-fit">
+        <Button
+          variant={activeTab === "tasks" ? "default" : "ghost"}
+          size="sm"
+          onClick={() => setActiveTab("tasks")}
+          className={cn(
+            activeTab === "tasks" && "bg-card text-card-foreground shadow-sm",
+            "transition-all duration-200"
+          )}
+        >
+          Tasks
+        </Button>
+        <Button
+          variant={activeTab === "files" ? "default" : "ghost"}
+          size="sm"
+          onClick={() => setActiveTab("files")}
+          className={cn(
+            activeTab === "files" && "bg-card text-card-foreground shadow-sm",
+            "transition-all duration-200"
+          )}
+        >
+          Files
+        </Button>
+      </div>
 
         {/* Tasks Tab */}
         {activeTab === "tasks" && (
@@ -189,7 +246,7 @@ const ProjectWorkspace = () => {
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Badge className={getStatusBadge(task.status)}>
+                        <Badge className={getTaskStatusBadge(task.status)}>
                           {task.status.replace('-', ' ')}
                         </Badge>
                         <Button 

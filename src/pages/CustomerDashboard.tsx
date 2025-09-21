@@ -45,17 +45,16 @@ const CustomerDashboard = () => {
   const { projects, isLoading } = useProjects();
 
 
-  const notifications = [
-    { type: "task", message: "Task 'Homepage Design' has been completed", time: "2 hours ago", project: "E-commerce Website" },
-    { type: "comment", message: "New comment on 'Logo Review' task", time: "4 hours ago", project: "Brand Identity" },
-    { type: "file", message: "New design files uploaded", time: "6 hours ago", project: "E-commerce Website" }
+  var notifications = [
+    // { type: "task", message: "Task 'Homepage Design' has been completed", time: "2 hours ago", project: "E-commerce Website" },
+    // { type: "comment", message: "New comment on 'Logo Review' task", time: "4 hours ago", project: "Brand Identity" },
+    // { type: "file", message: "New design files uploaded", time: "6 hours ago", project: "E-commerce Website" }
   ];
 
   const getStatusBadge = (status: string) => {
     const variants: Record<string, { class: string; icon: any }> = {
-      'in-progress': { class: 'bg-primary/10 text-primary', icon: Timer },
-      'review': { class: 'bg-warning/10 text-warning', icon: AlertTriangle },
-      'completed': { class: 'bg-success/10 text-success', icon: CheckCircle }
+      'Active': { class: 'bg-primary/10 text-primary', icon: Timer },
+      'Completed': { class: 'bg-success/10 text-success', icon: CheckCircle }
     };
     const config = variants[status] || { class: 'bg-muted', icon: Timer };
     const Icon = config.icon;
@@ -170,16 +169,15 @@ const CustomerDashboard = () => {
                               {project.tasksCompleted || 0}/{project.tasksTotal || 0} tasks completed
                             </span>
                           </div>
-                          
                           <div className="w-full bg-muted rounded-full h-2">
                             <div 
-                              className="bg-gradient-primary h-2 rounded-full transition-all"
-                              style={{ width: `${project.progress || 0}%` }}
+                              className="bg-blue-500 h-2 rounded-full transition-all duration-300"
+                              style={{ width: `${project.progress * 100 || 0}%` }}
                             ></div>
                           </div>
                           
                           <div className="flex items-center justify-between text-sm">
-                            <span className="text-primary font-medium">{project.progress || 0}% complete</span>
+                            <span className="text-primary font-medium">{(project.progress*100).toPrecision(3) || 0}% complete</span>
                             <span className="text-muted-foreground flex items-center gap-1">
                               <Clock className="w-3 h-3" />
                               Updated {project.lastUpdate || 'recently'}
@@ -206,7 +204,7 @@ const CustomerDashboard = () => {
                     ) : recentFiles.length === 0 ? (
                       <div className="text-center py-8">
                         <FileText className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
-                        <p className="text-muted-foreground">No files uploaded yet</p>
+                        {/* <p className="text-muted-foreground">No files uploaded yet</p> */}
                       </div>
                     ) : (
                       <div className="space-y-4">
