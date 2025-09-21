@@ -122,7 +122,11 @@ class ApiClient {
   }
 
   async getCompletedTasks(): Promise<Task[]> {
-    return (await this.request<Task[]>(`/api/projects/completed`)).filter(t => t.status == status);
+    return (await this.request<Task[]>(`/api/tasks/completed`));
+  }
+
+  async getPendingTasks(): Promise<Task[]> {
+    return (await this.request<Task[]>(`/api/tasks/pending`));
   }
 
   async getTask(projectId: string, taskId: string): Promise<Task> {

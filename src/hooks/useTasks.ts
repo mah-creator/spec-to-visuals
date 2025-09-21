@@ -100,6 +100,23 @@ export const useCompletedTasks = () => {
   };
 };
 
+export const usePendingTasks = () => {
+  const {
+    data: task,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ['pending-user-task'],
+    queryFn: () => apiClient.getPendingTasks(),
+  });
+
+  return {
+    task,
+    isLoading,
+    error,
+  };
+};
+
 export const useTaskComments = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();

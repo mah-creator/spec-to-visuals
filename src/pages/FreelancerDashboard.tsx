@@ -19,7 +19,7 @@ import {
   TrendingUp
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useCompletedTasks, useTask, useTasksByStatus } from "@/hooks/useTasks";
+import { useCompletedTasks, usePendingTasks } from "@/hooks/useTasks";
 
 const FreelancerDashboard = () => {
   const { user, logout } = useContext(AuthContext);
@@ -32,6 +32,7 @@ const FreelancerDashboard = () => {
   ).length;
 
   const completedTasks = useCompletedTasks()?.task?.length ?? 0;
+  const pendingTasks = usePendingTasks()?.task?.length ?? 0;
 
   const recentActivity = [
     { type: "task", message: "Task 'Homepage Design' marked as completed", time: "2 hours ago" },
@@ -123,7 +124,7 @@ const FreelancerDashboard = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Pending Tasks</p>
-                  <p className="text-2xl font-bold">13</p>
+                  <p className="text-2xl font-bold">{`${pendingTasks}`}</p>
                 </div>
                 <AlertCircle className="w-8 h-8 text-warning" />
               </div>
