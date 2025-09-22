@@ -12,6 +12,7 @@ import { useProjectFiles, useTaskFiles } from "@/hooks/useFiles";
 import { API_BASE_URL } from "@/lib/api-client";
 import FileUploadDialog from "@/components/FileUploadDialog";
 import { CreateTaskDialog } from "@/components/CreateTaskDialog";
+import { InviteToProjectDialog } from "@/components/InviteToProjectDialog";
 import { cn } from "@/lib/utils"; // Common path for cn utility
 
 
@@ -30,7 +31,8 @@ import {
   CheckCircle,
   Timer,
   AlertCircle,
-  MoreHorizontal
+  MoreHorizontal,
+  UserPlus
 } from "lucide-react";
 
 import { useNavigate, useParams } from "react-router-dom";
@@ -44,6 +46,7 @@ const ProjectWorkspace = () => {
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
   const [selectedTaskForUpload, setSelectedTaskForUpload] = useState<string | null>(null);
   const [createTaskDialogOpen, setCreateTaskDialogOpen] = useState(false);
+  const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
   
   const { project, isLoading: projectLoading } = useProject(id);
   const { tasks, isLoading: tasksLoading } = useTasks(id);
@@ -129,9 +132,21 @@ const ProjectWorkspace = () => {
                 {user?.role === 'freelancer' ? project.client : project.freelancer}
               </p>
             </div>
-            <Badge className={getProjectStatusBadge(project.status)}>
-              {project.status}
-            </Badge>
+            <div className="flex items-center gap-2">
+              {user?.role === 'freelancer' && (
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => setInviteDialogOpen(true)}
+                >
+                  <UserPlus className="w-4 h-4 mr-2" />
+                  Invite Client
+                </Button>
+              )}
+              <Badge className={getProjectStatusBadge(project.status)}>
+                {project.status}
+              </Badge>
+            </div>
           </div>
         </div>
       </header>
@@ -404,6 +419,14 @@ const ProjectWorkspace = () => {
           open={createTaskDialogOpen}
           onOpenChange={setCreateTaskDialogOpen}
           projectId={id!}
+        />
+
+        {/* Invite to Project Dialog */}
+        <InviteToProjectDialog 
+          open={inviteDialogOpen}
+          onOpenChange={setInviteDialogOpen}
+          projectId={id!}
+          projectTitle={project.title}
         />
       </div>
     </div>
