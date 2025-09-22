@@ -11,6 +11,7 @@ import { useTasks } from "@/hooks/useTasks";
 import { useProjectFiles, useTaskFiles } from "@/hooks/useFiles";
 import { API_BASE_URL } from "@/lib/api-client";
 import FileUploadDialog from "@/components/FileUploadDialog";
+import { CreateTaskDialog } from "@/components/CreateTaskDialog";
 import { cn } from "@/lib/utils"; // Common path for cn utility
 
 
@@ -42,6 +43,7 @@ const ProjectWorkspace = () => {
   const [activeTab, setActiveTab] = useState("tasks");
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
   const [selectedTaskForUpload, setSelectedTaskForUpload] = useState<string | null>(null);
+  const [createTaskDialogOpen, setCreateTaskDialogOpen] = useState(false);
   
   const { project, isLoading: projectLoading } = useProject(id);
   const { tasks, isLoading: tasksLoading } = useTasks(id);
@@ -226,7 +228,10 @@ const ProjectWorkspace = () => {
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-semibold">Tasks</h2>
               {user?.role === 'freelancer' && (
-                <Button className="bg-gradient-primary">
+                <Button 
+                  className="bg-gradient-primary"
+                  onClick={() => setCreateTaskDialogOpen(true)}
+                >
                   <Plus className="w-4 h-4 mr-2" />
                   Add Task
                 </Button>
@@ -393,6 +398,13 @@ const ProjectWorkspace = () => {
             taskTitle={tasks.find(task => task.id === (selectedTaskForUpload || selectedTaskId))?.title || "Unknown Task"}
           />
         )}
+
+        {/* Create Task Dialog */}
+        <CreateTaskDialog 
+          open={createTaskDialogOpen}
+          onOpenChange={setCreateTaskDialogOpen}
+          projectId={id!}
+        />
       </div>
     </div>
   );
