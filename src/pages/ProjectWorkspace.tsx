@@ -229,7 +229,7 @@ const ProjectWorkspace = () => {
               <h2 className="text-xl font-semibold">Tasks</h2>
               {user?.role === 'freelancer' && (
                 <Button 
-                  className="bg-gradient-primary"
+                  className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-md"
                   onClick={() => setCreateTaskDialogOpen(true)}
                 >
                   <Plus className="w-4 h-4 mr-2" />
@@ -335,7 +335,7 @@ const ProjectWorkspace = () => {
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-semibold">Project Files</h2>
               <Button 
-                className="bg-gradient-primary"
+                className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-md"
                 onClick={() => setUploadDialogOpen(true)}
                 disabled={!selectedTaskId}
               >

@@ -150,7 +150,7 @@ const FreelancerDashboard = () => {
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-semibold">Active Projects</h2>
               <Button 
-                className="bg-gradient-primary hover:shadow-primary"
+                className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-md"
                 onClick={() => setIsCreateDialogOpen(true)}
               >
                 <Plus className="w-4 h-4 mr-2" />
