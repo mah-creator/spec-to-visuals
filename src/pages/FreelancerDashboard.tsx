@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { AuthContext } from "../App";
 import { useProjects } from "@/hooks/useProjects";
+import { CreateProjectDialog } from "@/components/CreateProjectDialog";
 import { 
   Plus, 
   Calendar, 
@@ -25,6 +26,7 @@ const FreelancerDashboard = () => {
   const { user, logout } = useContext(AuthContext);
   const navigate = useNavigate();
   const { projects, isLoading } = useProjects();
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
   // Calculate stats from real data
   const activeProjects = projects.filter(p => 
@@ -147,7 +149,10 @@ const FreelancerDashboard = () => {
           <div className="lg:col-span-2">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-semibold">Active Projects</h2>
-              <Button className="bg-gradient-primary hover:shadow-primary">
+              <Button 
+                className="bg-gradient-primary hover:shadow-primary"
+                onClick={() => setIsCreateDialogOpen(true)}
+              >
                 <Plus className="w-4 h-4 mr-2" />
                 New Project
               </Button>
@@ -239,6 +244,11 @@ const FreelancerDashboard = () => {
           </div>
         </div>
       </div>
+
+      <CreateProjectDialog 
+        open={isCreateDialogOpen} 
+        onOpenChange={setIsCreateDialogOpen}
+      />
     </div>
   );
 };
