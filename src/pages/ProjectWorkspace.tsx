@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { AuthContext } from "../App";
 import { useProject } from "@/hooks/useProjects";
-import { useTasks } from "@/hooks/useTasks";
+import { useTasks, useTaskComments } from "@/hooks/useTasks";
 import { useProjectFiles, useTaskFiles } from "@/hooks/useFiles";
 import { API_BASE_URL } from "@/lib/api-client";
 import FileUploadDialog from "@/components/FileUploadDialog";
@@ -41,7 +41,7 @@ const ProjectWorkspace = () => {
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
-  const [newComment, setNewComment] = useState("");
+  const [taskComments, setTaskComments] = useState<Record<string, string>>({});
   const [activeTab, setActiveTab] = useState("tasks");
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
   const [selectedTaskForUpload, setSelectedTaskForUpload] = useState<string | null>(null);
@@ -50,6 +50,7 @@ const ProjectWorkspace = () => {
   
   const { project, isLoading: projectLoading } = useProject(id);
   const { tasks, isLoading: tasksLoading } = useTasks(id);
+  const { addComment, isAddingComment } = useTaskComments();
   
   const [animatedProgress, setAnimatedProgress] = useState(0);
   
@@ -111,9 +112,15 @@ const ProjectWorkspace = () => {
   };
 
   const handleAddComment = (taskId: string) => {
-    if (!newComment.trim()) return;
-    // Here you would typically add the comment to the task
-    setNewComment("");
+    const comment = taskComments[taskId];
+    if (!comment?.trim()) return;
+    
+    addComment({ projectId: id!, taskId, comment });
+    setTaskComments(prev => ({ ...prev, [taskId]: "" }));
+  };
+
+  const updateTaskComment = (taskId: string, comment: string) => {
+    setTaskComments(prev => ({ ...prev, [taskId]: comment }));
   };
 
   return (
@@ -326,11 +333,15 @@ const ProjectWorkspace = () => {
                           <div className="flex-1 flex gap-2">
                             <Input
                               placeholder="Add a comment..."
-                              value={newComment}
-                              onChange={(e) => setNewComment(e.target.value)}
-                              onKeyPress={(e) => e.key === 'Enter' && handleAddComment(task.id)}
+                              value={taskComments[task.id] || ""}
+                              onChange={(e) => updateTaskComment(task.id, e.target.value)}
+                              onKeyPress={(e) => e.key === "Enter" && handleAddComment(task.id)}
                             />
-                            <Button size="sm" onClick={() => handleAddComment(task.id)}>
+                            <Button 
+                              size="sm" 
+                              onClick={() => handleAddComment(task.id)}
+                              disabled={isAddingComment || !taskComments[task.id]?.trim()}
+                            >
                               <Send className="w-4 h-4" />
                             </Button>
                           </div>
