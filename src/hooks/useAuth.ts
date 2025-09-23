@@ -12,12 +12,21 @@ export const useAuth = () => {
     // Check if user is already logged in on app start
     const token = apiClient.getToken();
     if (token) {
-      // In a real app, you'd validate the token here
-      // For now, we'll assume token is valid
-      setLoading(false);
-    } else {
-      setLoading(false);
+      // Restore user from localStorage if token exists
+      const storedUser = localStorage.getItem('user');
+      if (storedUser) {
+        try {
+          const user = JSON.parse(storedUser);
+          setUser(user);
+        } catch (error) {
+          console.error('Error parsing stored user:', error);
+          // Clear invalid data
+          localStorage.removeItem('user');
+          apiClient.clearToken();
+        }
+      }
     }
+    setLoading(false);
   }, []);
 
   const login = async (credentials: { email: string; password: string }) => {
@@ -37,6 +46,7 @@ export const useAuth = () => {
           role: response.user.role?.toLowerCase() as 'admin' | 'freelancer' | 'customer'
         };
         setUser(normalizedUser);
+        localStorage.setItem('user', JSON.stringify(normalizedUser));
         console.log('Login successful with user object:', normalizedUser);
         toast({
           title: "Login successful",
@@ -54,6 +64,7 @@ export const useAuth = () => {
         };
         console.log('Created user object:', user);
         setUser(user);
+        localStorage.setItem('user', JSON.stringify(user));
         toast({
           title: "Login successful",
           description: `Welcome back, ${user.name}! Role: ${user.role}`,
@@ -74,6 +85,7 @@ export const useAuth = () => {
 
   const logout = () => {
     apiClient.clearToken();
+    localStorage.removeItem('user');
     setUser(null);
     toast({
       title: "Logged out",
