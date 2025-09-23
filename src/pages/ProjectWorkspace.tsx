@@ -1,4 +1,5 @@
 import { useState, useContext, useEffect } from "react";
+import { ChevronDown, ChevronUp } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -13,7 +14,7 @@ import { API_BASE_URL } from "@/lib/api-client";
 import FileUploadDialog from "@/components/FileUploadDialog";
 import { CreateTaskDialog } from "@/components/CreateTaskDialog";
 import { InviteToProjectDialog } from "@/components/InviteToProjectDialog";
-import { cn } from "@/lib/utils"; // Common path for cn utility
+import { cn, getTimeDifference } from "@/lib/utils"; // Common path for cn utility
 
 
 
@@ -52,6 +53,15 @@ const ProjectWorkspace = () => {
   const { tasks, isLoading: tasksLoading } = useTasks(id);
   const { addComment, isAddingComment } = useTaskComments();
   
+  const [expandedTasks, setExpandedTasks] = useState<Record<string, boolean>>({});
+
+  const toggleTaskExpansion = (taskId: string) => {
+    setExpandedTasks(prev => ({
+      ...prev,
+      [taskId]: !prev[taskId]
+    }));
+  };
+
   const [animatedProgress, setAnimatedProgress] = useState(0);
   
   useEffect(() => {
@@ -244,116 +254,129 @@ const ProjectWorkspace = () => {
         </Button>
       </div>
 
-        {/* Tasks Tab */}
-        {activeTab === "tasks" && (
-          <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold">Tasks</h2>
-              {user?.role === 'freelancer' && (
+      {/* Tasks Tab */}
+{activeTab === "tasks" && (
+  <div className="space-y-6">
+    <div className="flex items-center justify-between">
+      <h2 className="text-xl font-semibold">Tasks</h2>
+      {user?.role === 'freelancer' && (
+        <Button 
+          className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-md"
+          onClick={() => setCreateTaskDialogOpen(true)}
+        >
+          <Plus className="w-4 h-4 mr-2" />
+          Add Task
+        </Button>
+      )}
+    </div>
+    
+    <div className="space-y-4">
+      {tasks.map((task) => (
+        <Card key={task.id} className="border-0 shadow-md">
+          <CardContent className="p-6">
+            <div className="flex items-start justify-between mb-4">
+              <div 
+                className="flex items-start gap-3 cursor-pointer flex-1"
+                onClick={() => toggleTaskExpansion(task.id)}
+              >
+                {getStatusIcon(task.status)}
+                <div className="flex-1">
+                  <h3 className="font-semibold">{task.title}</h3>
+                  <p className="text-muted-foreground text-sm">{task.description}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <Badge className={getTaskStatusBadge(task.status)}>
+                  {task.status.replace('-', ' ')}
+                </Badge>
                 <Button 
-                  className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-md"
-                  onClick={() => setCreateTaskDialogOpen(true)}
+                  variant="ghost" 
+                  size="sm"
+                  onClick={() => {
+                    setSelectedTaskForUpload(task.id);
+                    setUploadDialogOpen(true);
+                  }}
                 >
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add Task
+                  <Upload className="w-4 h-4" />
                 </Button>
-              )}
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={() => toggleTaskExpansion(task.id)}
+                >
+                  {expandedTasks[task.id] ? (
+                    <ChevronUp className="w-4 h-4" />
+                  ) : (
+                    <ChevronDown className="w-4 h-4" />
+                  )}
+                </Button>
+              </div>
             </div>
             
-            <div className="space-y-4">
-              {tasks.map((task) => (
-                <Card key={task.id} className="border-0 shadow-md">
-                  <CardContent className="p-6">
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="flex items-start gap-3">
-                        {getStatusIcon(task.status)}
-                        <div className="flex-1">
-                          <h3 className="font-semibold">{task.title}</h3>
-                          <p className="text-muted-foreground text-sm">{task.description}</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Badge className={getTaskStatusBadge(task.status)}>
-                          {task.status.replace('-', ' ')}
-                        </Badge>
-                        <Button 
-                          variant="ghost" 
-                          size="sm"
-                          onClick={() => {
-                            setSelectedTaskForUpload(task.id);
-                            setUploadDialogOpen(true);
-                          }}
-                        >
-                          <Upload className="w-4 h-4" />
-                        </Button>
-                        <Button variant="ghost" size="sm">
-                          <MoreHorizontal className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center gap-4 text-sm text-muted-foreground mb-4">
-                      <span className="flex items-center gap-2">
-                        <Calendar className="w-4 h-4" />
-                        Due {task.dueDate ? new Date(task.dueDate).toLocaleDateString() : 'No due date'}
-                      </span>
-                      <span className="flex items-center gap-2">
-                        <Users className="w-4 h-4" />
-                        {task.assignee}
-                      </span>
-                    </div>
-
-                    {/* Comments */}
-                    <div className="space-y-4">
-                      <div className="flex items-center gap-2">
-                        <MessageSquare className="w-4 h-4" />
-                        <span className="font-medium">Comments ({task.comments.length})</span>
-                      </div>
-                      
-                      <div className="space-y-3 pl-6">
-                        {task.comments.map((comment) => (
-                          <div key={comment.id} className="flex gap-3">
-                            <Avatar className="w-8 h-8">
-                              <AvatarFallback>{comment.author.split(' ').map(n => n[0]).join('')}</AvatarFallback>
-                            </Avatar>
-                            <div className="flex-1 bg-muted/50 rounded-lg p-3">
-                              <div className="flex items-center justify-between mb-1">
-                                <span className="font-medium text-sm">{comment.author}</span>
-                                <span className="text-xs text-muted-foreground">{new Date(comment.time).toLocaleDateString()}</span>
-                              </div>
-                              <p className="text-sm">{comment.message}</p>
-                            </div>
-                          </div>
-                        ))}
-                        
-                        <div className="flex gap-3">
-                          <Avatar className="w-8 h-8">
-                            <AvatarFallback>{user?.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
-                          </Avatar>
-                          <div className="flex-1 flex gap-2">
-                            <Input
-                              placeholder="Add a comment..."
-                              value={taskComments[task.id] || ""}
-                              onChange={(e) => updateTaskComment(task.id, e.target.value)}
-                              onKeyPress={(e) => e.key === "Enter" && handleAddComment(task.id)}
-                            />
-                            <Button 
-                              size="sm" 
-                              onClick={() => handleAddComment(task.id)}
-                              disabled={isAddingComment || !taskComments[task.id]?.trim()}
-                            >
-                              <Send className="w-4 h-4" />
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+            <div className="flex items-center gap-4 text-sm text-muted-foreground mb-4">
+              <span className="flex items-center gap-2">
+                <Calendar className="w-4 h-4" />
+                Due {task.dueDate ? new Date(task.dueDate).toLocaleDateString() : 'No due date'}
+              </span>
+              <span className="flex items-center gap-2">
+                <Users className="w-4 h-4" />
+                {task.assignee}
+              </span>
             </div>
-          </div>
-        )}
+
+            {/* Comments Section - Conditionally Rendered */}
+            {expandedTasks[task.id] && (
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <MessageSquare className="w-4 h-4" />
+                  <span className="font-medium">Comments ({task.comments.length})</span>
+                </div>
+                
+                <div className="space-y-3 pl-6">
+                  {task.comments.map((comment) => (
+                    <div key={comment.id} className="flex gap-3">
+                      <Avatar className="w-8 h-8">
+                        <AvatarFallback>{comment.author.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1 bg-muted/50 rounded-lg p-3">
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="font-medium text-sm">{comment.author}</span>
+                          <span className="text-xs text-muted-foreground">{getTimeDifference(new Date(comment.time))}</span>
+                        </div>
+                        <p className="text-sm">{comment.message}</p>
+                      </div>
+                    </div>
+                  ))}
+                  
+                  <div className="flex gap-3">
+                    <Avatar className="w-8 h-8">
+                      <AvatarFallback>{user?.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 flex gap-2">
+                      <Input
+                        placeholder="Add a comment..."
+                        value={taskComments[task.id] || ""}
+                        onChange={(e) => updateTaskComment(task.id, e.target.value)}
+                        onKeyPress={(e) => e.key === "Enter" && handleAddComment(task.id)}
+                      />
+                      <Button 
+                        size="sm" 
+                        onClick={() => handleAddComment(task.id)}
+                        disabled={isAddingComment || !taskComments[task.id]?.trim()}
+                      >
+                        <Send className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  </div>
+)}
 
         {/* Files Tab */}
         {activeTab === "files" && (
@@ -393,7 +416,7 @@ const ProjectWorkspace = () => {
                           <div>
                             <p className="font-medium">{file.filename}</p>
                             <p className="text-sm text-muted-foreground">
-                              {Math.round(file.size / 1024)} KB • Uploaded by {file.uploader} • {new Date(file.uploadedAt).toLocaleDateString()}
+                              {Math.round(file.size / 1024)} KB • Uploaded by {file.uploader} • {getTimeDifference(new Date(file.uploadedAt))}
                             </p>
                           </div>
                         </div>
