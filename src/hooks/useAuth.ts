@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { apiClient } from '@/lib/api-client';
-import { User, LoginRequest } from '@/types/api';
+import { User, LoginRequest, SignupRequest } from '@/types/api';
 import { useToast } from '@/hooks/use-toast';
 
 export const useAuth = () => {
@@ -83,6 +83,26 @@ export const useAuth = () => {
     }
   };
 
+  const signup = async (userData: SignupRequest) => {
+    try {
+      setLoading(true);
+      await apiClient.signup(userData);
+      toast({
+        title: "Account created",
+        description: "Your account has been created successfully. Please sign in.",
+      });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Signup failed",
+        description: error instanceof Error ? error.message : "Failed to create account",
+      });
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const logout = () => {
     apiClient.clearToken();
     localStorage.removeItem('user');
@@ -97,6 +117,7 @@ export const useAuth = () => {
     user,
     loading,
     login,
+    signup,
     logout,
     isAuthenticated: !!user,
   };

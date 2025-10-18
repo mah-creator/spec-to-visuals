@@ -8,6 +8,7 @@ import { useAuth } from "./hooks/useAuth";
 
 // Pages
 import Login from "./pages/Login";
+import Signup from "./pages/Signup";
 import FreelancerDashboard from "./pages/FreelancerDashboard";
 import CustomerDashboard from "./pages/CustomerDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
@@ -18,11 +19,13 @@ import NotFound from "./pages/NotFound";
 export const AuthContext = React.createContext<{
   user: { id: string; name: string; email: string; role: 'admin' | 'freelancer' | 'customer' } | null;
   login: (credentials: { email: string; password: string }) => Promise<any>;
+  signup: (userData: { email: string; name: string; password: string; role: string }) => Promise<void>;
   logout: () => void;
   loading: boolean;
 }>({
   user: null,
   login: async () => {},
+  signup: async () => {},
   logout: () => {},
   loading: false,
 });
@@ -30,7 +33,7 @@ export const AuthContext = React.createContext<{
 const queryClient = new QueryClient();
 
 const App = () => {
-  const { user, login, logout, loading } = useAuth();
+  const { user, login, signup, logout, loading } = useAuth();
   
   console.log('App.tsx - Current user:', user);
   console.log('App.tsx - User role:', user?.role);
@@ -39,7 +42,7 @@ const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <AuthContext.Provider value={{ user, login, logout, loading }}>
+        <AuthContext.Provider value={{ user, login, signup, logout, loading }}>
           <Toaster />
           <Sonner />
           <BrowserRouter>
@@ -61,6 +64,7 @@ const App = () => {
                 })()
               ) : <Login />} />
               <Route path="/login" element={<Login />} />
+              <Route path="/signup" element={<Signup />} />
               <Route path="/freelancer" element={<FreelancerDashboard />} />
               <Route path="/customer" element={<CustomerDashboard />} />
               <Route path="/admin" element={<AdminDashboard />} />
