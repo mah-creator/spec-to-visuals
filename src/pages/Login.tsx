@@ -74,11 +74,32 @@ const Login = () => {
             </Button>
           </form>
 
-          <div className="text-center text-sm text-muted-foreground">
-            Don't have an account?{" "}
-            <Link to="/signup" className="text-primary hover:underline font-medium">
-              Sign up
-            </Link>
+          <div className="space-y-4">
+            <div className="text-center text-sm text-muted-foreground">
+              Don't have an account?{" "}
+              <Link to="/signup" className="text-primary hover:underline font-medium">
+                Sign up
+              </Link>
+            </div>
+
+            <div className="border-t pt-4">
+              <p className="text-sm font-medium text-center mb-3">Demo Accounts</p>
+              <div className="space-y-2 text-xs text-muted-foreground">
+                <div className="flex justify-between items-center bg-muted/50 p-2 rounded">
+                  <span className="font-medium">Customer:</span>
+                  <span>customer1@customer.com</span>
+                </div>
+                <div className="flex justify-between items-center bg-muted/50 p-2 rounded">
+                  <span className="font-medium">Freelancer:</span>
+                  <span>freelancer@local.com</span>
+                </div>
+                <div className="flex justify-between items-center bg-muted/50 p-2 rounded">
+                  <span className="font-medium">Admin:</span>
+                  <span>admin@local.com</span>
+                </div>
+                <p className="text-center pt-2">Password for all: <span className="font-mono font-semibold">123</span></p>
+              </div>
+            </div>
           </div>
         </CardContent>
       </Card>
