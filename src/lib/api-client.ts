@@ -152,7 +152,10 @@ class ApiClient {
   }
 
   // File endpoints
-  async uploadFile(uploadData: FileUploadRequest): Promise<FileResponse> {
+  async uploadFile(
+    uploadData: FileUploadRequest,
+    onProgress?: (progress: number) => void
+  ): Promise<FileResponse> {
     const formData = new FormData();
     formData.append('file', uploadData.file);
     formData.append('projectId', uploadData.projectId);
@@ -163,41 +166,53 @@ class ApiClient {
     const url = `${API_BASE_URL}/api/Files/upload`;
     const token = this.getToken();
 
-    const config: RequestInit = {
-      method: 'POST',
-      headers: {
-        ...(token && { Authorization: `Bearer ${token}` }),
-        // Don't set Content-Type for FormData - let browser set it with boundary
-      },
-      body: formData,
-    };
+    return new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
 
-    try {
-      const response = await fetch(url, config);
-      
-      if (!response.ok) {
-        const errorData = await response.text();
-        throw new ApiError({
-          message: errorData || `HTTP error! status: ${response.status}`,
-          status: response.status,
-        });
-      }
-
-      const contentType = response.headers.get('content-type');
-      if (contentType && contentType.includes('application/json')) {
-        return await response.json();
-      }
-      
-      return response.text() as unknown as FileResponse;
-    } catch (error) {
-      if (error instanceof ApiError) {
-        throw error;
-      }
-      throw new ApiError({
-        message: error instanceof Error ? error.message : 'Network error',
-        status: 0,
+      xhr.upload.addEventListener('progress', (e) => {
+        if (e.lengthComputable && onProgress) {
+          const percentComplete = (e.loaded / e.total) * 100;
+          onProgress(percentComplete);
+        }
       });
-    }
+
+      xhr.addEventListener('load', () => {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          try {
+            const contentType = xhr.getResponseHeader('content-type');
+            if (contentType && contentType.includes('application/json')) {
+              resolve(JSON.parse(xhr.responseText));
+            } else {
+              resolve(xhr.responseText as unknown as FileResponse);
+            }
+          } catch (error) {
+            reject(new ApiError({
+              message: 'Failed to parse response',
+              status: xhr.status,
+            }));
+          }
+        } else {
+          reject(new ApiError({
+            message: xhr.responseText || `HTTP error! status: ${xhr.status}`,
+            status: xhr.status,
+          }));
+        }
+      });
+
+      xhr.addEventListener('error', () => {
+        reject(new ApiError({
+          message: 'Network error',
+          status: 0,
+        }));
+      });
+
+      xhr.open('POST', url);
+      if (token) {
+        xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+      }
+
+      xhr.send(formData);
+    });
   }
 
   async getTaskFiles(taskId: string): Promise<FileResponse[]> {

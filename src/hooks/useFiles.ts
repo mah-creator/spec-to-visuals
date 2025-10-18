@@ -61,18 +61,19 @@ export const useFileUpload = () => {
   const queryClient = useQueryClient();
 
   const uploadFileMutation = useMutation({
-    mutationFn: (uploadData: FileUploadRequest) => apiClient.uploadFile(uploadData),
+    mutationFn: ({ uploadData, onProgress }: { uploadData: FileUploadRequest; onProgress?: (progress: number) => void }) => 
+      apiClient.uploadFile(uploadData, onProgress),
     onSuccess: (data, variables) => {
       toast({
         title: "File uploaded",
         description: "Your file has been uploaded successfully.",
       });
       // Invalidate task files query if taskId exists
-      if (variables.taskId) {
-        queryClient.invalidateQueries({ queryKey: ['task-files', variables.taskId] });
+      if (variables.uploadData.taskId) {
+        queryClient.invalidateQueries({ queryKey: ['task-files', variables.uploadData.taskId] });
       }
       // Invalidate project files if we had such a query
-      queryClient.invalidateQueries({ queryKey: ['project-files', variables.projectId] });
+      queryClient.invalidateQueries({ queryKey: ['project-files', variables.uploadData.projectId] });
     },
     onError: (error: any) => {
       toast({

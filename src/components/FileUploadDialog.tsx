@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Progress } from "@/components/ui/progress";
 import { Upload, X } from "lucide-react";
 import { useFileUpload } from "@/hooks/useFiles";
 
@@ -22,6 +23,7 @@ const FileUploadDialog = ({
   taskTitle,
 }: FileUploadDialogProps) => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const { uploadFile, isUploading } = useFileUpload();
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -32,19 +34,35 @@ const FileUploadDialog = ({
   const handleUpload = () => {
     if (!selectedFile) return;
 
-    uploadFile({
-      file: selectedFile,
-      projectId,
-      taskId,
-    });
+    setUploadProgress(0);
 
-    // Reset form and close dialog
-    setSelectedFile(null);
-    onOpenChange(false);
+    uploadFile({
+      uploadData: {
+        file: selectedFile,
+        projectId,
+        taskId,
+      },
+      onProgress: (progress) => {
+        setUploadProgress(progress);
+      }
+    }, {
+      onSuccess: () => {
+        // Reset form and close dialog after a short delay to show completion
+        setTimeout(() => {
+          setSelectedFile(null);
+          setUploadProgress(0);
+          onOpenChange(false);
+        }, 500);
+      },
+      onError: () => {
+        setUploadProgress(0);
+      }
+    });
   };
 
   const handleClose = () => {
     setSelectedFile(null);
+    setUploadProgress(0);
     onOpenChange(false);
   };
 
@@ -78,23 +96,37 @@ const FileUploadDialog = ({
           </div>
 
           {selectedFile && (
-            <div className="flex items-center gap-3 p-3 bg-muted rounded-lg">
-              <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
-                <Upload className="w-5 h-5 text-primary" />
+            <div className="space-y-3">
+              <div className="flex items-center gap-3 p-3 bg-muted rounded-lg">
+                <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+                  <Upload className="w-5 h-5 text-primary" />
+                </div>
+                <div className="flex-1">
+                  <p className="font-medium text-sm">{selectedFile.name}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {formatFileSize(selectedFile.size)}
+                  </p>
+                </div>
+                {!isUploading && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setSelectedFile(null)}
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                )}
               </div>
-              <div className="flex-1">
-                <p className="font-medium text-sm">{selectedFile.name}</p>
-                <p className="text-xs text-muted-foreground">
-                  {formatFileSize(selectedFile.size)}
-                </p>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setSelectedFile(null)}
-              >
-                <X className="w-4 h-4" />
-              </Button>
+
+              {isUploading && (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">Uploading...</span>
+                    <span className="font-medium">{Math.round(uploadProgress)}%</span>
+                  </div>
+                  <Progress value={uploadProgress} className="h-2" />
+                </div>
+              )}
             </div>
           )}
 
