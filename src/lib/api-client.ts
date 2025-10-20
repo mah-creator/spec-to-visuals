@@ -12,7 +12,7 @@ import {
   ApiError 
 } from '@/types/api';
 
-export const API_BASE_URL = import.meta.env.REACT_APP_API_URL || 'http://localhost:56545';
+export const API_BASE_URL = import.meta.env.REACT_APP_API_URL || 'https://mit-programming-conditioning-elsewhere.trycloudflare.com';
 
 class ApiClient {
   private token: string | null = null;
