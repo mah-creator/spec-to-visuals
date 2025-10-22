@@ -106,6 +106,33 @@ export interface AddCommentRequest {
   comment: string;
 }
 
+export interface UserProfile {
+  id: string;
+  name: string;
+  bio?: string;
+  phone?: string;
+  avatar_url?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface UserStats {
+  projectsCount: number;
+  tasksCompleted: number;
+  filesUploaded: number;
+}
+
+export interface UpdateProfileDto {
+  name?: string;
+  bio?: string;
+  phone?: string;
+}
+
+export interface ChangePasswordDto {
+  currentPassword: string;
+  newPassword: string;
+}
+
 export class ApiError extends Error {
   status: number;
   

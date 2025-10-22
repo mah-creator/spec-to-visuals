@@ -13,6 +13,7 @@ import FreelancerDashboard from "./pages/FreelancerDashboard";
 import CustomerDashboard from "./pages/CustomerDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
 import ProjectWorkspace from "./pages/ProjectWorkspace";
+import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 
 // Auth Context
@@ -69,6 +70,7 @@ const App = () => {
               <Route path="/customer" element={<CustomerDashboard />} />
               <Route path="/admin" element={<AdminDashboard />} />
               <Route path="/project/:id" element={<ProjectWorkspace />} />
+              <Route path="/profile" element={<Profile />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>

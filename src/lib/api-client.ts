@@ -9,6 +9,10 @@ import {
   Task,
   FileUploadRequest,
   FileResponse,
+  UserProfile,
+  UserStats,
+  UpdateProfileDto,
+  ChangePasswordDto,
   ApiError 
 } from '@/types/api';
 
@@ -245,6 +249,66 @@ class ApiClient {
     return this.request<void>(`/api/admin/unsuspend/${userId}`, {
       method: 'POST',
     });
+  }
+
+  // Profile endpoints
+  async getProfile(): Promise<UserProfile> {
+    return this.request<UserProfile>('/api/Users/profile');
+  }
+
+  async updateProfile(data: UpdateProfileDto): Promise<void> {
+    return this.request<void>('/api/Users/profile', {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async changePassword(data: ChangePasswordDto): Promise<void> {
+    return this.request<void>('/api/Users/change-password', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async uploadAvatar(file: File): Promise<void> {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const url = `${API_BASE_URL}/api/Users/avatar`;
+    const token = this.getToken();
+
+    return new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+
+      xhr.addEventListener('load', () => {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          resolve();
+        } else {
+          reject(new ApiError({
+            message: xhr.responseText || `HTTP error! status: ${xhr.status}`,
+            status: xhr.status,
+          }));
+        }
+      });
+
+      xhr.addEventListener('error', () => {
+        reject(new ApiError({
+          message: 'Network error',
+          status: 0,
+        }));
+      });
+
+      xhr.open('POST', url);
+      if (token) {
+        xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+      }
+
+      xhr.send(formData);
+    });
+  }
+
+  async getUserStats(userId: string): Promise<UserStats> {
+    return this.request<UserStats>(`/api/Users/${userId}/stats`);
   }
 }
 
