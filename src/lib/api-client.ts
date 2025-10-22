@@ -253,18 +253,18 @@ class ApiClient {
 
   // Profile endpoints
   async getProfile(): Promise<UserProfile> {
-    return this.request<UserProfile>('/api/Users/profile');
+    return this.request<UserProfile>('/api/users/profile');
   }
 
   async updateProfile(data: UpdateProfileDto): Promise<void> {
-    return this.request<void>('/api/Users/profile', {
+    return this.request<void>('/api/users/profile', {
       method: 'PUT',
       body: JSON.stringify(data),
     });
   }
 
   async changePassword(data: ChangePasswordDto): Promise<void> {
-    return this.request<void>('/api/Users/change-password', {
+    return this.request<void>('/api/Auth/change-password', {
       method: 'POST',
       body: JSON.stringify(data),
     });
@@ -274,7 +274,7 @@ class ApiClient {
     const formData = new FormData();
     formData.append('file', file);
 
-    const url = `${API_BASE_URL}/api/Users/avatar`;
+    const url = `${API_BASE_URL}/api/users/avatar`;
     const token = this.getToken();
 
     return new Promise((resolve, reject) => {
