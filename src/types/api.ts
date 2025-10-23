@@ -111,7 +111,7 @@ export interface UserProfile {
   name: string;
   bio?: string;
   phone?: string;
-  avatar_url?: string;
+  avatarUrl?: string;
   created_at: string;
   updated_at: string;
 }

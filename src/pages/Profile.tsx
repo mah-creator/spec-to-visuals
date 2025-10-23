@@ -1,4 +1,4 @@
-import { useContext, useState } from "react";
+import { useContext, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { AuthContext } from "../App";
 import { useProfile } from "@/hooks/useProfile";
+import { API_BASE_URL } from "@/lib/api-client";
 import { 
   ArrowLeft,
   Camera,
@@ -31,10 +32,21 @@ const Profile = () => {
   
   const [isEditMode, setIsEditMode] = useState(false);
   const [formData, setFormData] = useState({
-    name: profile?.name || user?.name || '',
-    bio: profile?.bio || '',
-    phone: profile?.phone || ''
+    name: '',
+    bio: '',
+    phone: ''
   });
+
+  // Update form data when profile is loaded
+  useEffect(() => {
+    if (profile) {
+      setFormData({
+        name: profile.name || user?.name || '',
+        bio: profile.bio || '',
+        phone: profile.phone || ''
+      });
+    }
+  }, [profile, user?.name]);
   
   const [passwordData, setPasswordData] = useState({
     currentPassword: '',
@@ -113,7 +125,7 @@ const Profile = () => {
               <div className="flex items-center gap-6">
                 <div className="relative">
                   <Avatar className="w-24 h-24">
-                    <AvatarImage src={profile?.avatar_url || ''} />
+                    <AvatarImage src={profile?.avatarUrl ? `${API_BASE_URL}${profile.avatarUrl}` : ''} />
                     <AvatarFallback className="text-2xl">
                       {user?.name.split(' ').map(n => n[0]).join('')}
                     </AvatarFallback>

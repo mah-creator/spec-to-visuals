@@ -58,9 +58,28 @@ class ApiClient {
       const response = await fetch(url, config);
       
       if (!response.ok) {
-        const errorData = await response.text();
+        let errorMessage = `HTTP error! status: ${response.status}`;
+        try {
+          const contentType = response.headers.get('content-type');
+          if (contentType && contentType.includes('application/json')) {
+            const problemDetails = await response.json();
+            // Use title from ProblemDetails if available
+            errorMessage = problemDetails.title || errorMessage;
+            // If there are validation errors, format them
+            if (problemDetails.errors) {
+              const validationErrors = Object.entries(problemDetails.errors)
+                .map(([field, messages]) => `${field}: ${(messages as string[]).join(', ')}`)
+                .join('; ');
+              errorMessage = `${errorMessage} - ${validationErrors}`;
+            }
+          } else {
+            errorMessage = await response.text() || errorMessage;
+          }
+        } catch (parseError) {
+          // If parsing fails, use the default error message
+        }
         throw new ApiError({
-          message: errorData || `HTTP error! status: ${response.status}`,
+          message: errorMessage,
           status: response.status,
         });
       }
