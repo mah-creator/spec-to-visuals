@@ -241,7 +241,7 @@ const CustomerDashboard = () => {
                                 </p>
                               </div>
                             </div>
-                            <a href={`${API_BASE_URL}/api/Files/${file.id}`} target="_blank">
+                            <a href={`${API_BASE_URL}/api/Files/${file.id}`} download={file.filename}>
                               <Button variant="ghost" size="sm">
                                 <Download className="w-4 h-4" />
                             </Button>
