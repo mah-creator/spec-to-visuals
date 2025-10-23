@@ -58,6 +58,7 @@ const Profile = () => {
   const [showPasswordSection, setShowPasswordSection] = useState(false);
   const [cropDialogOpen, setCropDialogOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string>('');
+  const [avatarTimestamp, setAvatarTimestamp] = useState(Date.now());
 
   const handleSaveProfile = async () => {
     const dataToSend = {
@@ -95,6 +96,7 @@ const Profile = () => {
   const handleCroppedImage = async (croppedBlob: Blob) => {
     const file = new File([croppedBlob], 'avatar.jpg', { type: 'image/jpeg' });
     await uploadAvatar(file);
+    setAvatarTimestamp(Date.now());
   };
 
   const getRoleBadge = (role?: string) => {
@@ -146,7 +148,7 @@ const Profile = () => {
                 <div className="relative">
                   <Avatar className="w-24 h-24">
                     <AvatarImage 
-                      src={profile?.avatarUrl ? `${API_BASE_URL}${profile.avatarUrl}?t=${new Date(profile.updated_at).getTime()}` : ''} 
+                      src={profile?.avatarUrl ? `${API_BASE_URL}${profile.avatarUrl}?t=${avatarTimestamp}` : ''} 
                     />
                     <AvatarFallback className="text-2xl">
                       {user?.name.split(' ').map(n => n[0]).join('')}
