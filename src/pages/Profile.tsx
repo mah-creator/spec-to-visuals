@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { AuthContext } from "../App";
 import { useProfile } from "@/hooks/useProfile";
 import { API_BASE_URL } from "@/lib/api-client";
+import { AvatarCropDialog } from "@/components/AvatarCropDialog";
 import { 
   ArrowLeft,
   Camera,
@@ -55,6 +56,8 @@ const Profile = () => {
   });
   
   const [showPasswordSection, setShowPasswordSection] = useState(false);
+  const [cropDialogOpen, setCropDialogOpen] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<string>('');
 
   const handleSaveProfile = async () => {
     const dataToSend = {
@@ -75,11 +78,23 @@ const Profile = () => {
     setShowPasswordSection(false);
   };
 
-  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAvatarSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      await uploadAvatar(file);
+      const reader = new FileReader();
+      reader.onload = () => {
+        setSelectedImage(reader.result as string);
+        setCropDialogOpen(true);
+      };
+      reader.readAsDataURL(file);
     }
+    // Reset input value to allow selecting the same file again
+    e.target.value = '';
+  };
+
+  const handleCroppedImage = async (croppedBlob: Blob) => {
+    const file = new File([croppedBlob], 'avatar.jpg', { type: 'image/jpeg' });
+    await uploadAvatar(file);
   };
 
   const getRoleBadge = (role?: string) => {
@@ -142,7 +157,7 @@ const Profile = () => {
                       type="file"
                       accept="image/*"
                       className="hidden"
-                      onChange={handleAvatarUpload}
+                      onChange={handleAvatarSelect}
                     />
                   </label>
                 </div>
@@ -320,6 +335,13 @@ const Profile = () => {
           </Card>
         </div>
       </div>
+
+      <AvatarCropDialog
+        open={cropDialogOpen}
+        onOpenChange={setCropDialogOpen}
+        imageSrc={selectedImage}
+        onCropComplete={handleCroppedImage}
+      />
     </div>
   );
 };
