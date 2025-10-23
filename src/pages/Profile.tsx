@@ -145,7 +145,9 @@ const Profile = () => {
               <div className="flex items-center gap-6">
                 <div className="relative">
                   <Avatar className="w-24 h-24">
-                    <AvatarImage src={profile?.avatarUrl ? `${API_BASE_URL}${profile.avatarUrl}` : ''} />
+                    <AvatarImage 
+                      src={profile?.avatarUrl ? `${API_BASE_URL}${profile.avatarUrl}?t=${new Date(profile.updated_at).getTime()}` : ''} 
+                    />
                     <AvatarFallback className="text-2xl">
                       {user?.name.split(' ').map(n => n[0]).join('')}
                     </AvatarFallback>
