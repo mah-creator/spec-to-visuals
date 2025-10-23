@@ -29,10 +29,8 @@ export const useProfile = () => {
 
   const fetchStats = async () => {
     try {
-      if (user?.id) {
-        const data = await apiClient.getUserStats(user.id);
+        const data = await apiClient.getUserStats();
         setStats(data);
-      }
     } catch (error) {
       console.error('Failed to fetch stats:', error);
     }

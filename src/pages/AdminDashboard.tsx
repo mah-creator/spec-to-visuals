@@ -1,4 +1,4 @@
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -28,8 +28,12 @@ import {
   Clock,
   UserCircle
 } from "lucide-react";
+import { useProfile } from "@/hooks/useProfile";
+import { API_BASE_URL } from "@/lib/api-client";
 
 const AdminDashboard = () => {
+  const { profile } = useProfile();
+  const [avatarTimestamp] = useState(Date.now());
   const { user, logout } = useContext(AuthContext);
   const navigate = useNavigate();
 
@@ -103,9 +107,17 @@ const AdminDashboard = () => {
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="flex items-center gap-2">
                     <Avatar className="w-8 h-8">
+                    <AvatarImage 
+                      src={profile?.avatarUrl ? `${API_BASE_URL}${profile.avatarUrl}?t=${avatarTimestamp}` : ''} 
+                    />
+                    <AvatarFallback>
+                      {user?.name.split(' ').map(n => n[0]).join('')}
+                    </AvatarFallback>
+                  </Avatar>
+                    {/* <Avatar className="w-8 h-8">
                       <AvatarImage src="" />
                       <AvatarFallback>{user?.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
-                    </Avatar>
+                    </Avatar> */}
                     <div className="text-sm text-left">
                       <div className="font-medium">{user?.name}</div>
                       <div className="text-muted-foreground">{user?.role}</div>

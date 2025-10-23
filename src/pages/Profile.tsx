@@ -54,6 +54,7 @@ const Profile = () => {
     newPassword: '',
     confirmPassword: ''
   });
+  const [passwordError, setPasswordError] = useState(false);
   
   const [showPasswordSection, setShowPasswordSection] = useState(false);
   const [cropDialogOpen, setCropDialogOpen] = useState(false);
@@ -72,9 +73,11 @@ const Profile = () => {
 
   const handleChangePassword = async () => {
     if (passwordData.newPassword !== passwordData.confirmPassword) {
+      setPasswordError(true);
       return;
     }
     await changePassword(passwordData.currentPassword, passwordData.newPassword);
+    setPasswordError(false);
     setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
     setShowPasswordSection(false);
   };
@@ -171,7 +174,10 @@ const Profile = () => {
                     <Mail className="w-4 h-4" />
                     {user?.email}
                   </p>
-                  {getRoleBadge(user?.role)}
+                  <div className="flex h-6">
+                    {getRoleBadge(user?.role)}
+
+                  </div>
                 </div>
                 <Button
                   variant={isEditMode ? "default" : "outline"}
@@ -227,8 +233,10 @@ const Profile = () => {
           {/* Activity Stats Card */}
           <Card className="border-0 shadow-md">
             <CardHeader>
-              <CardTitle>Account Activity</CardTitle>
-              <CardDescription>Your activity summary</CardDescription>
+              <CardTitle>
+                {user?.role == "admin" ? "Site Activity" : "Account Activity"}
+              </CardTitle>
+              {user?.role == "admin" ? "" : <CardDescription>Your activity summary</CardDescription>}
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -307,7 +315,11 @@ const Profile = () => {
                       id="confirm-password"
                       type="password"
                       value={passwordData.confirmPassword}
-                      onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
+                      onChange={(e) => {
+                        setPasswordData({ ...passwordData, confirmPassword: e.target.value });
+                        if (passwordError) setPasswordError(false);
+                      }}
+                      className={passwordError ? 'border-red-500 focus:border-red-500' : ''}
                       placeholder="Confirm new password"
                     />
                   </div>

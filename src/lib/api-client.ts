@@ -16,7 +16,7 @@ import {
   ApiError 
 } from '@/types/api';
 
-export const API_BASE_URL = import.meta.env.REACT_APP_API_URL || 'https://mit-programming-conditioning-elsewhere.trycloudflare.com';
+export const API_BASE_URL = import.meta.env.REACT_APP_API_URL || 'https://localhost:56544';
 
 class ApiClient {
   private token: string | null = null;
@@ -326,8 +326,8 @@ class ApiClient {
     });
   }
 
-  async getUserStats(userId: string): Promise<UserStats> {
-    return this.request<UserStats>(`/api/Users/${userId}/stats`);
+  async getUserStats(): Promise<UserStats> {
+    return this.request<UserStats>(`/api/users/stats`);
   }
 }
 

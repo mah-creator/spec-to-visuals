@@ -30,8 +30,12 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useCompletedTasks, usePendingTasks } from "@/hooks/useTasks";
+import { useProfile } from "@/hooks/useProfile";
+import { API_BASE_URL } from "@/lib/api-client";
 
 const FreelancerDashboard = () => {
+  const { profile } = useProfile();
+  const [avatarTimestamp] = useState(Date.now());
   const { user, logout } = useContext(AuthContext);
   const navigate = useNavigate();
   const { projects, isLoading } = useProjects();
@@ -86,9 +90,17 @@ const FreelancerDashboard = () => {
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="flex items-center gap-2">
                     <Avatar className="w-8 h-8">
+                      <AvatarImage 
+                        src={profile?.avatarUrl ? `${API_BASE_URL}${profile.avatarUrl}?t=${avatarTimestamp}` : ''} 
+                      />
+                      <AvatarFallback>
+                        {user?.name.split(' ').map(n => n[0]).join('')}
+                      </AvatarFallback>
+                    </Avatar>
+                    {/* <Avatar className="w-8 h-8">
                       <AvatarImage src="" />
                       <AvatarFallback>{user?.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
-                    </Avatar>
+                    </Avatar> */}
                     <div className="text-sm text-left">
                       <div className="font-medium">{user?.name}</div>
                       <div className="text-muted-foreground">{user?.role}</div>
