@@ -149,14 +149,21 @@ const Profile = () => {
               {/* Avatar Section */}
               <div className="flex items-center gap-6">
                 <div className="relative">
-                  <Avatar className="w-24 h-24">
-                    <AvatarImage 
-                      src={profile?.avatarUrl ? `${API_BASE_URL}${profile.avatarUrl}?t=${avatarTimestamp}` : ''} 
-                    />
-                    <AvatarFallback className="text-2xl">
-                      {user?.name.split(' ').map(n => n[0]).join('')}
-                    </AvatarFallback>
-                  </Avatar>
+                  <div className="relative">
+                    <Avatar className="w-24 h-24">
+                      <AvatarImage 
+                        src={profile?.avatarUrl ? `${API_BASE_URL}${profile.avatarUrl}?t=${avatarTimestamp}` : ''} 
+                      />
+                      <AvatarFallback className="text-2xl">
+                        {user?.name.split(' ').map(n => n[0]).join('')}
+                      </AvatarFallback>
+                    </Avatar>
+                    {isLoading && (
+                      <div className="absolute inset-0 bg-white bg-opacity-70 flex items-center justify-center rounded-full">
+                        <div className="animate-spin rounded-full h-6 w-6 border-2 border-blue-500 border-t-transparent"></div>
+                      </div>
+                    )}
+                  </div>
                   <label htmlFor="avatar-upload" className="absolute bottom-0 right-0 bg-primary text-primary-foreground rounded-full p-2 cursor-pointer hover:bg-primary/90 shadow-lg">
                     <Camera className="w-4 h-4" />
                     <input
