@@ -57,7 +57,12 @@ const Profile = () => {
   const [showPasswordSection, setShowPasswordSection] = useState(false);
 
   const handleSaveProfile = async () => {
-    await updateProfile(formData);
+    const dataToSend = {
+      name: formData.name.trim() || null,
+      bio: formData.bio.trim() || null,
+      phone: formData.phone.trim() || null
+    };
+    await updateProfile(dataToSend);
     setIsEditMode(false);
   };
 
