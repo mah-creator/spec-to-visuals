@@ -92,6 +92,7 @@ export interface FileUploadRequest {
 }
 
 export interface FileResponse {
+  id: number;
   filename: string;
   projectTitle: string;
   size: number;
