@@ -157,12 +157,13 @@ const ProjectWorkspace = () => {
   };
 
   const getNextStatus = (currentStatus: string, userRole: string): string | null => {
+    const normalizedStatus = currentStatus.toLowerCase();
     if (userRole === 'freelancer') {
-      if (currentStatus === 'ToDo') return 'In_progress';
-      if (currentStatus === 'In_progress') return 'Pending_review';
+      if (normalizedStatus === 'todo') return 'In_progress';
+      if (normalizedStatus === 'in_progress') return 'Pending_review';
       return null;
     } else if (userRole === 'customer') {
-      if (currentStatus === 'Pending_review') return 'Done';
+      if (normalizedStatus === 'pending_review') return 'Done';
       return null;
     }
     return null;
@@ -372,9 +373,9 @@ const ProjectWorkspace = () => {
                     disabled={isUpdating}
                     className="bg-green-500/10 text-green-600 border-green-500/20 hover:bg-green-500/20"
                   >
-                    {user?.role === 'freelancer' && task.status === 'ToDo' && 'Start'}
-                    {user?.role === 'freelancer' && task.status === 'In_progress' && 'Submit for Review'}
-                    {user?.role === 'customer' && task.status === 'Pending_review' && 'Approve'}
+                    {user?.role === 'freelancer' && task.status.toLowerCase() === 'todo' && 'Start'}
+                    {user?.role === 'freelancer' && task.status.toLowerCase() === 'in_progress' && 'Submit for Review'}
+                    {user?.role === 'customer' && task.status.toLowerCase() === 'pending_review' && 'Approve'}
                   </Button>
                 )}
                 
