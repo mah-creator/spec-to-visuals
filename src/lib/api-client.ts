@@ -58,6 +58,12 @@ class ApiClient {
       const response = await fetch(url, config);
       
       if (!response.ok) {
+        // Handle 4xx errors by logging out and redirecting
+        if (response.status >= 400 && response.status < 500) {
+          this.clearToken();
+          window.location.href = '/login';
+        }
+        
         let errorMessage = `HTTP error! status: ${response.status}`;
         try {
           const contentType = response.headers.get('content-type');

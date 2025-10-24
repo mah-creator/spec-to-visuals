@@ -50,8 +50,9 @@ const ProjectWorkspace = () => {
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
   
   const { project, isLoading: projectLoading } = useProject(id);
-  const { tasks, isLoading: tasksLoading } = useTasks(id);
+  const { tasks, isLoading: tasksLoading, updateTaskStatus, isUpdating } = useTasks(id);
   const { addComment, isAddingComment } = useTaskComments();
+  const [taskFilter, setTaskFilter] = useState<'all' | 'active' | 'canceled'>('active');
   
   const [expandedTasks, setExpandedTasks] = useState<Record<string, boolean>>({});
 
@@ -107,7 +108,7 @@ const ProjectWorkspace = () => {
       case 'Canceled': return <XCircle className="w-4 h-4 text-red-600" />;
       case 'Done': return <CheckCircle2 className="w-4 h-4 text-green-600" />;
       case 'In_progress': return <PlayCircle className="w-4 h-4 text-blue-600" />;
-      case 'Todo': return <ListTodo className="w-4 h-4 text-orange-600" />;
+      case 'ToDo': return <ListTodo className="w-4 h-4 text-orange-600" />;
       default: return <HelpCircle className="w-4 h-4 text-gray-500" />;
     }
   };
@@ -131,7 +132,7 @@ const ProjectWorkspace = () => {
       /* Enhanced version */
       
       'Pending_review': 'bg-yellow-500/15 text-yellow-600 border border-yellow-500/20 px-3 py-1 rounded-full text-sm font-medium',
-      'Todo': 'bg-orange-500/10 text-orange-600 border border-orange-300 px-3 py-1 rounded-lg text-sm font-medium',
+      'ToDo': 'bg-orange-500/10 text-orange-600 border border-orange-300 px-3 py-1 rounded-lg text-sm font-medium',
       'Canceled': 'bg-red-500/15 text-red-600 border border-red-500/20 px-3 py-1 rounded-full text-sm font-medium',
       'Done': 'bg-green-500/15 text-green-600 border border-green-500/20 px-3 py-1 rounded-full text-sm font-medium',
       'In_progress': 'bg-blue-500/15 text-blue-600 border border-blue-500/20 px-3 py-1 rounded-full text-sm font-medium',
@@ -150,6 +151,32 @@ const ProjectWorkspace = () => {
   const updateTaskComment = (taskId: string, comment: string) => {
     setTaskComments(prev => ({ ...prev, [taskId]: comment }));
   };
+
+  const handleStatusChange = (taskId: string, newStatus: string) => {
+    updateTaskStatus({ taskId, status: newStatus });
+  };
+
+  const getNextStatus = (currentStatus: string, userRole: string): string | null => {
+    if (userRole === 'freelancer') {
+      if (currentStatus === 'ToDo') return 'In_progress';
+      if (currentStatus === 'In_progress') return 'Pending_review';
+      return null;
+    } else if (userRole === 'customer') {
+      if (currentStatus === 'Pending_review') return 'Done';
+      return null;
+    }
+    return null;
+  };
+
+  const canChangeStatus = (currentStatus: string, userRole: string): boolean => {
+    return getNextStatus(currentStatus, userRole) !== null;
+  };
+
+  const filteredTasks = tasks.filter(task => {
+    if (taskFilter === 'active') return task.status !== 'Canceled';
+    if (taskFilter === 'canceled') return task.status === 'Canceled';
+    return true;
+  });
 
   return (
     <div className="min-h-screen bg-gradient-subtle">
@@ -277,19 +304,47 @@ const ProjectWorkspace = () => {
   <div className="space-y-6">
     <div className="flex items-center justify-between">
       <h2 className="text-xl font-semibold">Tasks</h2>
-      {user?.role === 'freelancer' && (
-        <Button 
-          className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-md"
-          onClick={() => setCreateTaskDialogOpen(true)}
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          Add Task
-        </Button>
-      )}
+      <div className="flex items-center gap-3">
+        <div className="flex gap-1 bg-muted p-1 rounded-lg">
+          <Button
+            variant={taskFilter === 'active' ? "default" : "ghost"}
+            size="sm"
+            onClick={() => setTaskFilter('active')}
+            className={cn(
+              taskFilter === 'active' && "bg-card text-card-foreground shadow-sm",
+              "transition-all duration-200"
+            )}
+          >
+            <ListChecks className="w-4 h-4 mr-2" />
+            Active
+          </Button>
+          <Button
+            variant={taskFilter === 'canceled' ? "default" : "ghost"}
+            size="sm"
+            onClick={() => setTaskFilter('canceled')}
+            className={cn(
+              taskFilter === 'canceled' && "bg-card text-card-foreground shadow-sm",
+              "transition-all duration-200"
+            )}
+          >
+            <XCircle className="w-4 h-4 mr-2" />
+            Canceled
+          </Button>
+        </div>
+        {user?.role === 'freelancer' && (
+          <Button 
+            className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-md"
+            onClick={() => setCreateTaskDialogOpen(true)}
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Add Task
+          </Button>
+        )}
+      </div>
     </div>
     
     <div className="space-y-4">
-      {tasks.map((task) => (
+      {filteredTasks.map((task) => (
         <Card key={task.id} className="border-0 shadow-md">
           <CardContent className="p-6">
             <div className="flex items-start justify-between mb-4">
@@ -307,6 +362,35 @@ const ProjectWorkspace = () => {
                 <Badge className={getTaskStatusBadge(task.status)}>
                   {task.status.replace('_', ' ')}
                 </Badge>
+                
+                {/* Status Change Buttons */}
+                {canChangeStatus(task.status, user?.role || '') && task.status !== 'Canceled' && (
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => handleStatusChange(task.id, getNextStatus(task.status, user?.role || '')!)}
+                    disabled={isUpdating}
+                    className="bg-green-500/10 text-green-600 border-green-500/20 hover:bg-green-500/20"
+                  >
+                    {user?.role === 'freelancer' && task.status === 'ToDo' && 'Start'}
+                    {user?.role === 'freelancer' && task.status === 'In_progress' && 'Submit for Review'}
+                    {user?.role === 'customer' && task.status === 'Pending_review' && 'Approve'}
+                  </Button>
+                )}
+                
+                {/* Cancel Button for Freelancers on non-canceled tasks */}
+                {user?.role === 'freelancer' && task.status !== 'Canceled' && task.status !== 'Done' && (
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => handleStatusChange(task.id, 'Canceled')}
+                    disabled={isUpdating}
+                    className="bg-red-500/10 text-red-600 border-red-500/20 hover:bg-red-500/20"
+                  >
+                    Cancel
+                  </Button>
+                )}
+                
                 <Button 
                   variant="ghost" 
                   size="sm"

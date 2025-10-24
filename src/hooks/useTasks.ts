@@ -36,8 +36,8 @@ export const useTasks = (projectId: string | undefined) => {
   });
 
   const updateTaskStatusMutation = useMutation({
-    mutationFn: ({ taskId, status }: { taskId: string; status: UpdateTaskStatusDto }) =>
-      apiClient.updateTaskStatus(projectId!, taskId, status),
+    mutationFn: ({ taskId, status }: { taskId: string; status: string }) =>
+      apiClient.updateTaskStatus(projectId!, taskId, { status }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tasks', projectId] });
       toast({
