@@ -387,64 +387,64 @@ const ProjectWorkspace = () => {
                   {task.assignee}
                 </span>
               </div>
-            </div>
-            {/* Action Buttons Row */}
-            <div className="flex items-center gap-2 flex-wrap">
-              {/* Status Change Buttons */}
-              {canChangeStatus(task.status, user?.role || '') && task.status !== 'Canceled' && (
-                <Button 
-                  variant="default" 
-                  size="sm"
-                  onClick={() => handleStatusChange(task.id, getNextStatus(task.status, user?.role || '')!)}
-                  disabled={isUpdating}
-                  className="bg-primary text-primary-foreground hover:bg-primary/90"
-                >
-                  {user?.role === 'freelancer' && task.status.toLowerCase() === 'todo' && (
-                    <>
-                      <PlayCircle className="w-4 h-4 mr-2" />
-                      Start Task
-                    </>
-                  )}
-                  {user?.role === 'freelancer' && task.status.toLowerCase() === 'in_progress' && (
-                    <>
-                      <Eye className="w-4 h-4 mr-2" />
-                      Submit for Review
-                    </>
-                  )}
-                  {user?.role === 'customer' && task.status.toLowerCase() === 'pending_review' && (
-                    <>
-                      <CheckCircle2 className="w-4 h-4 mr-2" />
-                      Approve & Complete
-                    </>
-                  )}
-                </Button>
-              )}
-              
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={() => {
-                  setSelectedTaskForUpload(task.id);
-                  setUploadDialogOpen(true);
-                }}
-              >
-                <Upload className="w-4 h-4 mr-2" />
-                Upload Files
-              </Button>
-
-              {/* Cancel Button for Freelancers on non-canceled tasks */}
-              {user?.role === 'freelancer' && task.status !== 'Canceled' && task.status !== 'Done' && (
+              {/* Action Buttons Row */}
+              <div className="flex items-rightgap-2 flex-wrap">
+                {/* Status Change Buttons */}
+                {canChangeStatus(task.status, user?.role || '') && task.status !== 'Canceled' && (
+                  <Button 
+                    variant="default" 
+                    size="sm"
+                    onClick={() => handleStatusChange(task.id, getNextStatus(task.status, user?.role || '')!)}
+                    disabled={isUpdating}
+                    className="bg-primary text-primary-foreground hover:bg-primary/90"
+                  >
+                    {user?.role === 'freelancer' && task.status.toLowerCase() === 'todo' && (
+                      <>
+                        <PlayCircle className="w-4 h-4 mr-2" />
+                        Start Task
+                      </>
+                    )}
+                    {user?.role === 'freelancer' && task.status.toLowerCase() === 'in_progress' && (
+                      <>
+                        <Eye className="w-4 h-4 mr-2" />
+                        Submit for Review
+                      </>
+                    )}
+                    {user?.role === 'customer' && task.status.toLowerCase() === 'pending_review' && (
+                      <>
+                        <CheckCircle2 className="w-4 h-4 mr-2" />
+                        Approve & Complete
+                      </>
+                    )}
+                  </Button>
+                )}
+                
                 <Button 
                   variant="outline" 
                   size="sm"
-                  onClick={() => handleStatusChange(task.id, 'Canceled')}
-                  disabled={isUpdating}
-                  className="text-destructive border-destructive/20 hover:bg-destructive/10"
+                  onClick={() => {
+                    setSelectedTaskForUpload(task.id);
+                    setUploadDialogOpen(true);
+                  }}
                 >
-                  <XCircle className="w-4 h-4 mr-2" />
-                  Cancel Task
+                  <Upload className="w-4 h-4 mr-2" />
+                  Upload Files
                 </Button>
-              )}
+
+                {/* Cancel Button for Freelancers on non-canceled tasks */}
+                {user?.role === 'freelancer' && task.status !== 'Canceled' && task.status !== 'Done' && (
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => handleStatusChange(task.id, 'Canceled')}
+                    disabled={isUpdating}
+                    className="text-destructive border-destructive/20 hover:bg-destructive/10"
+                  >
+                    <XCircle className="w-4 h-4 mr-2" />
+                    Cancel Task
+                  </Button>
+                )}
+              </div>
             </div>
 
             {/* Comments Section - Conditionally Rendered */}
