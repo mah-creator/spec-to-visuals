@@ -348,37 +348,80 @@ const ProjectWorkspace = () => {
       {filteredTasks.map((task) => (
         <Card key={task.id} className="border-0 shadow-md">
           <CardContent className="p-6">
-            <div className="flex items-start justify-between mb-4">
-              <div 
-                className="flex items-start gap-3 cursor-pointer flex-1"
-                onClick={() => toggleTaskExpansion(task.id)}
-              >
-                {getStatusIcon(task.status)}
-                <div className="flex-1">
-                  <h3 className="font-semibold">{task.title}</h3>
-                  <p className="text-muted-foreground text-sm">{task.description}</p>
+            <div className="space-y-3">
+              <div className="flex items-start justify-between">
+                <div 
+                  className="flex items-start gap-3 cursor-pointer flex-1"
+                  onClick={() => toggleTaskExpansion(task.id)}
+                >
+                  {getStatusIcon(task.status)}
+                  <div className="flex-1">
+                    <h3 className="font-semibold">{task.title}</h3>
+                    <p className="text-muted-foreground text-sm">{task.description}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Badge className={getTaskStatusBadge(task.status)}>
+                    {task.status.replace('_', ' ')}
+                  </Badge>
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => toggleTaskExpansion(task.id)}
+                  >
+                    {expandedTasks[task.id] ? (
+                      <ChevronUp className="w-4 h-4" />
+                    ) : (
+                      <ChevronDown className="w-4 h-4" />
+                    )}
+                  </Button>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
-                <Badge className={getTaskStatusBadge(task.status)}>
-                  {task.status.replace('_', ' ')}
-                </Badge>
-                
+
+              {/* Action Buttons Row */}
+              <div className="flex items-center gap-2 flex-wrap">
                 {/* Status Change Buttons */}
                 {canChangeStatus(task.status, user?.role || '') && task.status !== 'Canceled' && (
                   <Button 
-                    variant="outline" 
+                    variant="default" 
                     size="sm"
                     onClick={() => handleStatusChange(task.id, getNextStatus(task.status, user?.role || '')!)}
                     disabled={isUpdating}
-                    className="bg-green-500/10 text-green-600 border-green-500/20 hover:bg-green-500/20"
+                    className="bg-primary text-primary-foreground hover:bg-primary/90"
                   >
-                    {user?.role === 'freelancer' && task.status.toLowerCase() === 'todo' && 'Start'}
-                    {user?.role === 'freelancer' && task.status.toLowerCase() === 'in_progress' && 'Submit for Review'}
-                    {user?.role === 'customer' && task.status.toLowerCase() === 'pending_review' && 'Approve'}
+                    {user?.role === 'freelancer' && task.status.toLowerCase() === 'todo' && (
+                      <>
+                        <PlayCircle className="w-4 h-4 mr-2" />
+                        Start Task
+                      </>
+                    )}
+                    {user?.role === 'freelancer' && task.status.toLowerCase() === 'in_progress' && (
+                      <>
+                        <Eye className="w-4 h-4 mr-2" />
+                        Submit for Review
+                      </>
+                    )}
+                    {user?.role === 'customer' && task.status.toLowerCase() === 'pending_review' && (
+                      <>
+                        <CheckCircle2 className="w-4 h-4 mr-2" />
+                        Approve & Complete
+                      </>
+                    )}
                   </Button>
                 )}
                 
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => {
+                    setSelectedTaskForUpload(task.id);
+                    setUploadDialogOpen(true);
+                  }}
+                >
+                  <Upload className="w-4 h-4 mr-2" />
+                  Upload Files
+                </Button>
+
                 {/* Cancel Button for Freelancers on non-canceled tasks */}
                 {user?.role === 'freelancer' && task.status !== 'Canceled' && task.status !== 'Done' && (
                   <Button 
@@ -386,33 +429,12 @@ const ProjectWorkspace = () => {
                     size="sm"
                     onClick={() => handleStatusChange(task.id, 'Canceled')}
                     disabled={isUpdating}
-                    className="bg-red-500/10 text-red-600 border-red-500/20 hover:bg-red-500/20"
+                    className="text-destructive border-destructive/20 hover:bg-destructive/10"
                   >
-                    Cancel
+                    <XCircle className="w-4 h-4 mr-2" />
+                    Cancel Task
                   </Button>
                 )}
-                
-                <Button 
-                  variant="ghost" 
-                  size="sm"
-                  onClick={() => {
-                    setSelectedTaskForUpload(task.id);
-                    setUploadDialogOpen(true);
-                  }}
-                >
-                  <Upload className="w-4 h-4" />
-                </Button>
-                <Button 
-                  variant="ghost" 
-                  size="sm"
-                  onClick={() => toggleTaskExpansion(task.id)}
-                >
-                  {expandedTasks[task.id] ? (
-                    <ChevronUp className="w-4 h-4" />
-                  ) : (
-                    <ChevronDown className="w-4 h-4" />
-                  )}
-                </Button>
               </div>
             </div>
             
