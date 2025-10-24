@@ -108,7 +108,7 @@ const ProjectWorkspace = () => {
       case 'Canceled': return <XCircle className="w-4 h-4 text-red-600" />;
       case 'Done': return <CheckCircle2 className="w-4 h-4 text-green-600" />;
       case 'In_progress': return <PlayCircle className="w-4 h-4 text-blue-600" />;
-      case 'ToDo': return <ListTodo className="w-4 h-4 text-orange-600" />;
+      case 'Todo': return <ListTodo className="w-4 h-4 text-orange-600" />;
       default: return <HelpCircle className="w-4 h-4 text-gray-500" />;
     }
   };
@@ -132,7 +132,7 @@ const ProjectWorkspace = () => {
       /* Enhanced version */
       
       'Pending_review': 'bg-yellow-500/15 text-yellow-600 border border-yellow-500/20 px-3 py-1 rounded-full text-sm font-medium',
-      'ToDo': 'bg-orange-500/10 text-orange-600 border border-orange-300 px-3 py-1 rounded-lg text-sm font-medium',
+      'Todo': 'bg-orange-500/10 text-orange-600 border border-orange-300 px-3 py-1 rounded-lg text-sm font-medium',
       'Canceled': 'bg-red-500/15 text-red-600 border border-red-500/20 px-3 py-1 rounded-full text-sm font-medium',
       'Done': 'bg-green-500/15 text-green-600 border border-green-500/20 px-3 py-1 rounded-full text-sm font-medium',
       'In_progress': 'bg-blue-500/15 text-blue-600 border border-blue-500/20 px-3 py-1 rounded-full text-sm font-medium',
