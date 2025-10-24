@@ -119,7 +119,7 @@ const AdminDashboard = () => {
                       <AvatarFallback>{user?.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
                     </Avatar> */}
                     <div className="text-sm text-left">
-                      <div className="font-medium">{user?.name}</div>
+                      <div className="font-medium">{profile?.name}</div>
                       <div className="text-muted-foreground">{user?.role}</div>
                     </div>
                   </Button>

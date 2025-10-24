@@ -83,6 +83,8 @@ export interface Task {
     message: string;
     time: string;
   }>;
+  filesCount?: number;
+  isOverdue?: boolean;
 }
 
 export interface FileUploadRequest {
@@ -93,6 +95,7 @@ export interface FileUploadRequest {
 
 export interface FileResponse {
   id: number;
+  taskId: string;
   filename: string;
   projectTitle: string;
   size: number;

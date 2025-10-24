@@ -16,7 +16,7 @@ import {
   ApiError 
 } from '@/types/api';
 
-export const API_BASE_URL = import.meta.env.REACT_APP_API_URL || 'https://mit-programming-conditioning-elsewhere.trycloudflare.com';
+export const API_BASE_URL = import.meta.env.REACT_APP_API_URL || 'https://localhost:56544';//'https://mit-programming-conditioning-elsewhere.trycloudflare.com';
 
 class ApiClient {
   private token: string | null = null;
@@ -58,8 +58,8 @@ class ApiClient {
       const response = await fetch(url, config);
       
       if (!response.ok) {
-        // Handle 4xx errors by logging out and redirecting
-        if (response.status >= 400 && response.status < 500) {
+        // Handle 401 errors by logging out and redirecting
+        if (response.status == 401) {
           this.clearToken();
           window.location.href = '/login';
         }
