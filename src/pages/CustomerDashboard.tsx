@@ -29,7 +29,8 @@ import {
   CheckCircle,
   Timer,
   AlertTriangle,
-  UserCircle
+  UserCircle,
+  CircleX
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useProfile } from "@/hooks/useProfile";
@@ -52,6 +53,7 @@ const CustomerDashboard = () => {
 
   const getStatusBadge = (status: string) => {
     const variants: Record<string, { class: string; icon: any }> = {
+      'Deleted': { class: 'bg-danger/10 text-danger', icon: CircleX },
       'Active': { class: 'bg-primary/10 text-primary', icon: Timer },
       'Completed': { class: 'bg-success/10 text-success', icon: CheckCircle }
     };
@@ -60,7 +62,7 @@ const CustomerDashboard = () => {
     return (
       <Badge className={`${config.class} flex items-center gap-1`}>
         <Icon className="w-3 h-3" />
-        {status.replace('-', ' ')}
+        {status.replace('_', ' ')}
       </Badge>
     );
   };

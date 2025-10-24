@@ -1,5 +1,5 @@
 import { useState, useContext, useEffect } from "react";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { CheckCircle2, ChevronDown, ChevronUp, Circle, CircleDashed, Eye, Flag, HelpCircle, List, ListChecks, ListTodo, PlayCircle, XCircle } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -97,15 +97,24 @@ const ProjectWorkspace = () => {
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'Done': return <CheckCircle className="w-4 h-4 text-success" />;
-      case 'InProgress': return <Timer className="w-4 h-4 text-primary" />;
-      case 'Todo': return <AlertCircle className="w-4 h-4 text-warning" />;
-      default: return <AlertCircle className="w-4 h-4 text-muted-foreground" />;
+      // case 'Pending_review': return <Clock className="w-4 h-4 text-yellow-500" />;
+      // case 'Canceled': return <AlertCircle className="w-4 h-4 text-danger" />;
+      // case 'Done': return <CheckCircle className="w-4 h-4 text-success" />;
+      // case 'In_progress': return <Timer className="w-4 h-4 text-primary" />;
+      // case 'Todo': return <AlertCircle className="w-4 h-4 text-warning" />;
+      // default: return <AlertCircle className="w-4 h-4 text-muted-foreground" />;
+      case 'Pending_review': return <Eye className="w-4 h-4 text-yellow-600 animate-pulse" />;
+      case 'Canceled': return <XCircle className="w-4 h-4 text-red-600" />;
+      case 'Done': return <CheckCircle2 className="w-4 h-4 text-green-600" />;
+      case 'In_progress': return <PlayCircle className="w-4 h-4 text-blue-600" />;
+      case 'Todo': return <ListTodo className="w-4 h-4 text-orange-600" />;
+      default: return <HelpCircle className="w-4 h-4 text-gray-500" />;
     }
   };
 
   const getProjectStatusBadge = (status: string) => {
     const variants: Record<string, string> = {
+      'Deleted': 'bg-danger/10 text-danger',
       'Completed': 'bg-success/10 text-success',
       'Active': 'bg-primary/10 text-primary',
     };
@@ -114,9 +123,18 @@ const ProjectWorkspace = () => {
 
   const getTaskStatusBadge = (status: string) => {
     const variants: Record<string, string> = {
-      'Done': 'bg-success/10 text-success',
-      'InProgress': 'bg-primary/10 text-primary',
-      'Todo': 'bg-warning/10 text-warning',
+      // 'Pending_review': 'bg-yellow-500/10 text-yellow-500',
+      // 'Canceled': 'bg-danger/10 text-danger',
+      // 'Done': 'bg-success/10 text-success',
+      // 'In_progress': 'bg-primary/10 text-primary',
+      // 'Todo': 'bg-warning/10 text-warning',
+      /* Enhanced version */
+      
+      'Pending_review': 'bg-yellow-500/15 text-yellow-600 border border-yellow-500/20 px-3 py-1 rounded-full text-sm font-medium',
+      'Todo': 'bg-orange-500/10 text-orange-600 border border-orange-300 px-3 py-1 rounded-lg text-sm font-medium',
+      'Canceled': 'bg-red-500/15 text-red-600 border border-red-500/20 px-3 py-1 rounded-full text-sm font-medium',
+      'Done': 'bg-green-500/15 text-green-600 border border-green-500/20 px-3 py-1 rounded-full text-sm font-medium',
+      'In_progress': 'bg-blue-500/15 text-blue-600 border border-blue-500/20 px-3 py-1 rounded-full text-sm font-medium',
     };
     return variants[status] || 'bg-muted';
   };
@@ -287,7 +305,7 @@ const ProjectWorkspace = () => {
               </div>
               <div className="flex items-center gap-2">
                 <Badge className={getTaskStatusBadge(task.status)}>
-                  {task.status.replace('-', ' ')}
+                  {task.status.replace('_', ' ')}
                 </Badge>
                 <Button 
                   variant="ghost" 

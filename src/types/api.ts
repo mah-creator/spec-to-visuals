@@ -71,7 +71,7 @@ export interface Task {
   projectId: string;
   title: string;
   description: string;
-  status: 'pending' | 'in-progress' | 'completed';
+  status: 'ToDo' | 'In_progress' | 'Pending_review' | 'Done' | 'Canceled';
   dueDate: string;
   createdAt: string;
   updatedAt: string;

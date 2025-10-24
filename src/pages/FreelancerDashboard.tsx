@@ -58,6 +58,7 @@ const FreelancerDashboard = () => {
 
   const getStatusBadge = (status: string) => {
     const variants: Record<string, string> = {
+      'Deleted': 'bg-danger/10 text-danger',
       'Active': 'bg-primary/10 text-primary',
       'Completed': 'bg-success/10 text-success'
     };
@@ -228,7 +229,7 @@ const FreelancerDashboard = () => {
                           </p>
                         </div>
                         <Badge className={getStatusBadge(project.status)}>
-                          {project.status.replace('-', ' ')}
+                          {project.status.replace('_', ' ')}
                         </Badge>
                       </div>
                       
