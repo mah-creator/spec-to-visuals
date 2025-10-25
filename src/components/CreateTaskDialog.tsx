@@ -156,7 +156,6 @@ export const CreateTaskDialog = ({ open, onOpenChange, projectId }: CreateTaskDi
                   <FormLabel className="text-gray-700 font-medium flex items-center gap-2">
                     <Calendar className="w-4 h-4 text-blue-500" />
                     Due Date
-                    <span className="text-red-500 font-normal text-sm">*</span>
                   </FormLabel>
                   <FormControl>
                     <div className="relative">

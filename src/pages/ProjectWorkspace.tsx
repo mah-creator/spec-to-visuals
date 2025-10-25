@@ -333,8 +333,8 @@ const ProjectWorkspace = () => {
                 const isOverdue = task.dueDate && new Date(task.dueDate) < new Date();
                 
                 return (
-                  <div key={task.id} className="bg-white rounded-xl border border-gray-200 hover:border-gray-300 transition-all duration-200 shadow-sm hover:shadow-md">
-                    <div className="p-5">
+                  <div key={task.id} className="bg-white rounded-2xl border border-gray-100 hover:border-gray-200 transition-all duration-300 shadow-lg hover:shadow-xl">
+                    <div className="p-6">
                       <div className="flex items-start justify-between gap-4">
                         {/* Main Content */}
                         <div className="flex-1 min-w-0">
