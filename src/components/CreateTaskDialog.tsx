@@ -28,7 +28,7 @@ import { cn } from "@/lib/utils";
 const formSchema = z.object({
   title: z.string().min(1, "Title is required"),
   description: z.string().min(1, "Description is required"),
-  dueDate: z.string().optional(),
+  dueDate: z.string().min(1, "Due date is required"),
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -55,7 +55,7 @@ export const CreateTaskDialog = ({ open, onOpenChange, projectId }: CreateTaskDi
     createTask({
       title: data.title,
       description: data.description,
-      dueDate: data.dueDate || undefined,
+      dueDate: data.dueDate,
     });
     
     form.reset();
@@ -156,7 +156,7 @@ export const CreateTaskDialog = ({ open, onOpenChange, projectId }: CreateTaskDi
                   <FormLabel className="text-gray-700 font-medium flex items-center gap-2">
                     <Calendar className="w-4 h-4 text-blue-500" />
                     Due Date
-                    <span className="text-gray-400 font-normal text-sm">(Optional)</span>
+                    <span className="text-red-500 font-normal text-sm">*</span>
                   </FormLabel>
                   <FormControl>
                     <div className="relative">
