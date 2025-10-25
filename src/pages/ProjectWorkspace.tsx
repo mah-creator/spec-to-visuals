@@ -333,14 +333,14 @@ const ProjectWorkspace = () => {
                 const isOverdue = task.dueDate && new Date(task.dueDate) < new Date();
                 
                 return (
-                  <div key={task.id} className="bg-white rounded-2xl border border-gray-100 hover:border-gray-200 transition-all duration-300 shadow-lg hover:shadow-xl">
+                  <div key={task.id} className="bg-white rounded-2xl border border-gray-100 hover:border-gray-200 transition-all duration-300 shadow-lg hover:shadow-xl overflow-hidden">
                     <div className="p-6">
                       <div className="flex items-start justify-between gap-4">
                         {/* Main Content */}
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-3 mb-2">
+                          <div className="flex items-center gap-3 mb-2 flex-wrap">
                             <span className={cn(
-                              "px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1.5 border",
+                              "px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1.5 border whitespace-nowrap",
                               status.color
                             )}>
                               {status.icon}
@@ -349,7 +349,7 @@ const ProjectWorkspace = () => {
                             
                             {/* Overdue Badge */}
                             {task.isOverdue && (
-                              <span className="px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800 border border-red-200 flex items-center gap-1">
+                              <span className="px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800 border border-red-200 flex items-center gap-1 whitespace-nowrap">
                                 <AlertTriangle className="w-3 h-3" />
                                 Overdue
                               </span>
@@ -357,20 +357,20 @@ const ProjectWorkspace = () => {
                           </div>
 
                           <h3 
-                            className="font-semibold text-gray-900 text-lg mb-1 hover:text-blue-600 cursor-pointer transition-colors"
+                            className="font-semibold text-gray-900 text-lg mb-1 hover:text-blue-600 cursor-pointer transition-colors break-words"
                             onClick={() => toggleTaskExpansion(task.id)}
                           >
                             {task.title}
                           </h3>
                           
-                          <p className="text-gray-600 text-sm line-clamp-2 mb-3">
+                          <p className="text-gray-600 text-sm line-clamp-2 mb-3 break-words">
                             {task.description}
                           </p>
 
                           {/* Metadata Row */}
                           <div className="flex items-center gap-4 text-sm text-gray-500 flex-wrap">
-                            <span className="flex items-center gap-1.5">
-                              <Calendar className="w-4 h-4" />
+                            <span className="flex items-center gap-1.5 whitespace-nowrap">
+                              <Calendar className="w-4 h-4 flex-shrink-0" />
                               {task.dueDate ? (
                                 <span className={task.isOverdue ? 'text-red-600 font-medium' : ''}>
                                   Due {new Date(task.dueDate).toLocaleDateString()}
@@ -380,23 +380,23 @@ const ProjectWorkspace = () => {
                               )}
                             </span>
                             
-                            <span className="flex items-center gap-1.5">
-                              <Users className="w-4 h-4" />
-                              {task.assignee || 'Unassigned'}
+                            <span className="flex items-center gap-1.5 min-w-0">
+                              <Users className="w-4 h-4 flex-shrink-0" />
+                              <span className="truncate">{task.assignee || 'Unassigned'}</span>
                             </span>
 
                             {/* File Count */}
                             {task.filesCount > 0 && (
-                              <span className="flex items-center gap-1.5">
-                                <Paperclip className="w-4 h-4" />
+                              <span className="flex items-center gap-1.5 whitespace-nowrap">
+                                <Paperclip className="w-4 h-4 flex-shrink-0" />
                                 {task.filesCount} file{task.filesCount !== 1 ? 's' : ''}
                               </span>
                             )}
 
                             {/* Comment Count */}
                             {task.comments?.length > 0 && (
-                              <span className="flex items-center gap-1.5 text-blue-600 font-medium">
-                                <MessageSquare className="w-4 h-4" />
+                              <span className="flex items-center gap-1.5 text-blue-600 font-medium whitespace-nowrap">
+                                <MessageSquare className="w-4 h-4 flex-shrink-0" />
                                 {task.comments.length} comment{task.comments.length !== 1 ? 's' : ''}
                               </span>
                             )}
@@ -404,7 +404,7 @@ const ProjectWorkspace = () => {
                         </div>
 
                         {/* Action Area */}
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-shrink-0">
                           {/* Primary Action Button */}
                           {canChangeStatus(task.status, user?.role || '') && task.status !== 'Canceled' && (
                             <Button 
