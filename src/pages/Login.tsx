@@ -31,25 +31,25 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50/50 flex items-center justify-center p-4">
-      <div className="w-full max-w-md space-y-6">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50/50 flex items-center justify-center p-3 overflow-auto">
+      <div className="w-full max-w-md space-y-3 py-2">
         {/* Header */}
-        <div className="text-center space-y-3">
-          <div className="mx-auto w-16 h-16 bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl flex items-center justify-center shadow-lg">
-            <Briefcase className="w-8 h-8 text-white" />
+        <div className="text-center space-y-2">
+          <div className="mx-auto w-12 h-12 bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl flex items-center justify-center shadow-lg">
+            <Briefcase className="w-6 h-6 text-white" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Client Portal</h1>
-            <p className="text-gray-600 mt-1">Professional project management platform</p>
+            <h1 className="text-xl font-bold text-gray-900">Client Portal</h1>
+            <p className="text-sm text-gray-600">Professional project management platform</p>
           </div>
         </div>
 
         <Card className="border border-gray-200 shadow-lg hover:shadow-xl transition-all duration-200">
-          <CardContent className="p-6 space-y-6">
-            <form onSubmit={handleSubmit} className="space-y-5">
+          <CardContent className="p-4 space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-3">
               {/* Email Field */}
-              <div className="space-y-2">
-                <Label htmlFor="email" className="text-gray-700 font-medium">Email</Label>
+              <div className="space-y-1">
+                <Label htmlFor="email" className="text-sm text-gray-700 font-medium">Email</Label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                   <Input
@@ -59,14 +59,14 @@ const Login = () => {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
-                    className="h-11 pl-10 pr-4 border-gray-300 focus:border-blue-500 focus:ring-blue-500 transition-colors"
+                    className="h-9 pl-10 pr-4 border-gray-300 focus:border-blue-500 focus:ring-blue-500 transition-colors"
                   />
                 </div>
               </div>
               
               {/* Password Field */}
-              <div className="space-y-2">
-                <Label htmlFor="password" className="text-gray-700 font-medium">Password</Label>
+              <div className="space-y-1">
+                <Label htmlFor="password" className="text-sm text-gray-700 font-medium">Password</Label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                   <Input
@@ -76,7 +76,7 @@ const Login = () => {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
-                    className="h-11 pl-10 pr-11 border-gray-300 focus:border-blue-500 focus:ring-blue-500 transition-colors"
+                    className="h-9 pl-10 pr-11 border-gray-300 focus:border-blue-500 focus:ring-blue-500 transition-colors"
                   />
                   <button
                     type="button"
@@ -91,7 +91,7 @@ const Login = () => {
               {/* Sign In Button */}
               <Button 
                 type="submit" 
-                className="w-full h-11 bg-blue-600 hover:bg-blue-700 text-white font-medium transition-all duration-200 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full h-9 bg-blue-600 hover:bg-blue-700 text-white font-medium transition-all duration-200 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
                 disabled={loading}
               >
                 {loading ? (
@@ -108,10 +108,10 @@ const Login = () => {
               </Button>
             </form>
 
-            <div className="space-y-5">
+            <div className="space-y-3">
               {/* Sign Up Link */}
               <div className="text-center">
-                <p className="text-sm text-gray-600">
+                <p className="text-xs text-gray-600">
                   Don't have an account?{" "}
                   <Link 
                     to="/signup" 
@@ -123,62 +123,56 @@ const Login = () => {
               </div>
 
               {/* Demo Accounts */}
-              <div className="border-t border-gray-200 pt-5">
-                <p className="text-sm font-medium text-gray-900 text-center mb-4">Try Demo Accounts</p>
-                <div className="grid gap-3">
+              <div className="border-t border-gray-200 pt-3">
+                <p className="text-xs font-medium text-gray-900 text-center mb-2">Try Demo Accounts</p>
+                <div className="grid gap-2">
                   {/* Customer Demo */}
                   <button
                     type="button"
                     onClick={() => fillDemoAccount('customer1@customer.com', '123')}
-                    className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 bg-white hover:border-blue-300 hover:shadow-md transition-all duration-200 cursor-pointer group"
+                    className="flex items-center gap-2 p-2 rounded-lg border border-gray-200 bg-white hover:border-blue-300 hover:shadow-md transition-all duration-200 cursor-pointer group"
                   >
-                    <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center group-hover:bg-green-200 transition-colors">
-                      <User className="w-5 h-5 text-green-600" />
+                    <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center group-hover:bg-green-200 transition-colors">
+                      <User className="w-4 h-4 text-green-600" />
                     </div>
                     <div className="flex-1 text-left">
-                      <p className="text-sm font-medium text-gray-900 group-hover:text-blue-600 transition-colors">Customer</p>
-                      <p className="text-xs text-gray-500">customer1@customer.com</p>
+                      <p className="text-xs font-medium text-gray-900 group-hover:text-blue-600 transition-colors">Customer</p>
                     </div>
-                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
                   </button>
 
                   {/* Freelancer Demo */}
                   <button
                     type="button"
                     onClick={() => fillDemoAccount('freelancer@local.com', '123')}
-                    className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 bg-white hover:border-blue-300 hover:shadow-md transition-all duration-200 cursor-pointer group"
+                    className="flex items-center gap-2 p-2 rounded-lg border border-gray-200 bg-white hover:border-blue-300 hover:shadow-md transition-all duration-200 cursor-pointer group"
                   >
-                    <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center group-hover:bg-blue-200 transition-colors">
-                      <UserCog className="w-5 h-5 text-blue-600" />
+                    <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center group-hover:bg-blue-200 transition-colors">
+                      <UserCog className="w-4 h-4 text-blue-600" />
                     </div>
                     <div className="flex-1 text-left">
-                      <p className="text-sm font-medium text-gray-900 group-hover:text-blue-600 transition-colors">Freelancer</p>
-                      <p className="text-xs text-gray-500">freelancer@local.com</p>
+                      <p className="text-xs font-medium text-gray-900 group-hover:text-blue-600 transition-colors">Freelancer</p>
                     </div>
-                    <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
                   </button>
 
                   {/* Admin Demo */}
                   <button
                     type="button"
                     onClick={() => fillDemoAccount('admin@local.com', '123')}
-                    className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 bg-white hover:border-blue-300 hover:shadow-md transition-all duration-200 cursor-pointer group"
+                    className="flex items-center gap-2 p-2 rounded-lg border border-gray-200 bg-white hover:border-blue-300 hover:shadow-md transition-all duration-200 cursor-pointer group"
                   >
-                    <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center group-hover:bg-red-200 transition-colors">
-                      <Shield className="w-5 h-5 text-red-600" />
+                    <div className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center group-hover:bg-red-200 transition-colors">
+                      <Shield className="w-4 h-4 text-red-600" />
                     </div>
                     <div className="flex-1 text-left">
-                      <p className="text-sm font-medium text-gray-900 group-hover:text-blue-600 transition-colors">Admin</p>
-                      <p className="text-xs text-gray-500">admin@local.com</p>
+                      <p className="text-xs font-medium text-gray-900 group-hover:text-blue-600 transition-colors">Admin</p>
                     </div>
-                    <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
                   </button>
                 </div>
 
                 {/* Demo Instructions */}
-                <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded-lg">
                   <p className="text-xs text-blue-700 text-center">
-                    <strong>Demo Tip:</strong> Click any demo account to auto-fill credentials
+                    Click to auto-fill credentials
                   </p>
                 </div>
               </div>
@@ -187,9 +181,9 @@ const Login = () => {
         </Card>
 
         {/* Footer */}
-        <div className="text-center">
+        <div className="text-center pb-2">
           <p className="text-xs text-gray-500">
-            Secure login powered by modern authentication
+            Secure login
           </p>
         </div>
       </div>
