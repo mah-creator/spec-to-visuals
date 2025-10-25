@@ -102,6 +102,7 @@ export interface FileResponse {
   uploader: string;
   uploadedAt: string;
   path: string;
+  contentType: string;
 }
 
 export interface AddCommentRequest {

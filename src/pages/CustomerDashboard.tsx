@@ -40,6 +40,7 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useProfile } from "@/hooks/useProfile";
+import FileTypeIcon from "@/components/ui/FileTypeIcon";
 
 const CustomerDashboard = () => {
   const { profile } = useProfile();
@@ -289,8 +290,12 @@ const CustomerDashboard = () => {
                       {recentFiles.map((file, index) => (
                         <div key={index} className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 transition-colors border border-gray-100">
                           <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                              <FileText className="w-5 h-5 text-blue-600" />
+                            <div className="w-10 h-10 rounded-lg flex items-center justify-center">
+                              <FileTypeIcon 
+                                mimeType={file.contentType} 
+                                filename={file.filename}
+                                className="w-5 h-5 text-blue-600"
+                              />
                             </div>
                             <div>
                               <p className="font-medium text-gray-900">{file.filename}</p>

@@ -38,6 +38,7 @@ import { InviteToProjectDialog } from "@/components/InviteToProjectDialog";
 import { cn, getTimeDifference } from "@/lib/utils";
 import { useNavigate, useParams } from "react-router-dom";
 import { API_BASE_URL } from "@/lib/api-client";
+import FileTypeIcon from "@/components/ui/FileTypeIcon";
 
 const ProjectWorkspace = () => {
   const { user } = useContext(AuthContext);
@@ -602,9 +603,13 @@ const ProjectWorkspace = () => {
                     {projectFiles.map((file, index) => (
                       <div key={index} className="flex items-center justify-between p-4 rounded-lg hover:bg-gray-50 transition-colors border border-gray-100">
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                            <FileText className="w-5 h-5 text-blue-600" />
-                          </div>
+                          <div className="w-10 h-10 rounded-lg flex items-center justify-center">
+                              <FileTypeIcon 
+                                mimeType={file.contentType} 
+                                filename={file.filename}
+                                className="w-5 h-5 text-blue-600"
+                              />
+                            </div>
                           <div>
                             <p className="font-medium text-gray-900">{file.filename}</p>
                             <p className="text-sm text-gray-500">
