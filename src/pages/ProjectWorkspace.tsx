@@ -370,6 +370,15 @@ const ProjectWorkspace = () => {
 
                           {/* Metadata Row */}
                           <div className="flex items-center gap-4 text-sm text-gray-500 flex-wrap">
+                            {task.startDate && (
+                              <span className="flex items-center gap-1.5 whitespace-nowrap">
+                                <Clock className="w-4 h-4 flex-shrink-0 text-blue-600" />
+                                <span className="text-blue-600 font-medium">
+                                  Started {new Date(task.startDate).toLocaleDateString()}
+                                </span>
+                              </span>
+                            )}
+                            
                             <span className="flex items-center gap-1.5 whitespace-nowrap">
                               <Calendar className="w-4 h-4 flex-shrink-0" />
                               {task.dueDate ? (

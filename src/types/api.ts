@@ -21,6 +21,7 @@ export interface CreateTaskDto {
   title: string;
   description: string;
   dueDate?: string;
+  startDate?: string;
 }
 
 export interface UpdateTaskStatusDto {
@@ -73,6 +74,7 @@ export interface Task {
   description: string;
   status: 'ToDo' | 'In_progress' | 'Pending_review' | 'Done' | 'Canceled';
   dueDate: string;
+  startDate?: string;
   createdAt: string;
   updatedAt: string;
   // Additional fields for UI display

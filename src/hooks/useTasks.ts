@@ -18,7 +18,14 @@ export const useTasks = (projectId: string | undefined) => {
   });
 
   const createTaskMutation = useMutation({
-    mutationFn: (task: CreateTaskDto) => apiClient.createTask(projectId!, task),
+    mutationFn: (task: CreateTaskDto) => {
+      // Automatically add the current date as the start date
+      const taskWithStartDate = {
+        ...task,
+        startDate: new Date().toISOString(),
+      };
+      return apiClient.createTask(projectId!, taskWithStartDate);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tasks', projectId] });
       toast({
