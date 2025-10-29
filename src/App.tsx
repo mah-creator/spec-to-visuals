@@ -64,6 +64,9 @@ const App = () => {
                   }
                 })()
               ) : <Login />} />
+              <Route path="/project/:id" element={
+                user ? <ProjectWorkspace /> : <Login />
+              } />
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
               <Route path="/freelancer" element={<FreelancerDashboard />} />

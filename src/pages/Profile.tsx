@@ -1,5 +1,5 @@
 import { useContext, useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,7 @@ import { AuthContext } from "../App";
 import { useProfile } from "@/hooks/useProfile";
 import { API_BASE_URL } from "@/lib/api-client";
 import { AvatarCropDialog } from "@/components/AvatarCropDialog";
+import { InvitationsSection } from "@/components/InvitationsSection";
 import { 
   ArrowLeft,
   Camera,
@@ -31,6 +32,7 @@ import {
   Upload,
   RotateCcw
 } from "lucide-react";
+import { NotificationsDropdown } from "@/components/NotificationsDropdown";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -38,7 +40,10 @@ import { cn } from "@/lib/utils";
 const Profile = () => {
   const { user, logout } = useContext(AuthContext);
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { profile, stats, updateProfile, changePassword, uploadAvatar, isLoading } = useProfile();
+  
+  const [highlightedInvitationId, setHighlightedInvitationId] = useState<string | null>(null);
   
   const [isEditMode, setIsEditMode] = useState(false);
   const [formData, setFormData] = useState({
@@ -76,6 +81,29 @@ const Profile = () => {
   const [cropDialogOpen, setCropDialogOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string>('');
   const [avatarTimestamp, setAvatarTimestamp] = useState(Date.now());
+
+  // Handle deep linking to invitations
+  useEffect(() => {
+    const invitationId = searchParams.get('invitationId');
+    if (invitationId) {
+      setHighlightedInvitationId(invitationId);
+      
+      // Scroll to invitations section
+      setTimeout(() => {
+        const invitationsSection = document.getElementById('invitations-section');
+        if (invitationsSection) {
+          invitationsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 100);
+
+      // Clear highlight and URL after animation
+      setTimeout(() => {
+        setHighlightedInvitationId(null);
+        searchParams.delete('invitationId');
+        setSearchParams(searchParams, { replace: true });
+      }, 3000);
+    }
+  }, [searchParams, setSearchParams]);
 
   // Check if form has changes
   const hasChanges = 
@@ -172,6 +200,7 @@ const Profile = () => {
                 <p className="text-sm text-gray-600">Manage your account information</p>
               </div>
             </div>
+              <NotificationsDropdown />
           </div>
         </div>
       </header>
@@ -522,6 +551,13 @@ const Profile = () => {
               )}
             </CardContent>
           </Card>
+
+          {/* Invitations Section - Only for Customers */}
+          {user?.role === 'customer' && (
+            <div id="invitations-section">
+              <InvitationsSection highlightedInvitationId={highlightedInvitationId} />
+            </div>
+          )}
 
           {/* Danger Zone Card */}
           <Card className="border border-red-200 shadow-sm">

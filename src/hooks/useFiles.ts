@@ -5,7 +5,7 @@ import { useToast } from '@/hooks/use-toast';
 
 export const useTaskFiles = (taskId: string) => {
   const {
-    data: files = [],
+    data: filesData,
     isLoading,
     error,
   } = useQuery({
@@ -14,6 +14,8 @@ export const useTaskFiles = (taskId: string) => {
     enabled: !!taskId,
   });
 
+  const files = filesData?.items || [];
+
   return {
     files,
     isLoading,
@@ -21,38 +23,48 @@ export const useTaskFiles = (taskId: string) => {
   };
 };
 
-export const useRecentFiles = () => {
+export const useRecentFiles = (page: number = 1, pageSize: number = 10) => {
   const {
-    data: files = [],
+    data: filesData,
     isLoading,
     error,
   } = useQuery({
-    queryKey: ['recent-files'],
-    queryFn: () => apiClient.getRecentFiles(),
+    queryKey: ['recent-files', page, pageSize],
+    queryFn: () => apiClient.getRecentFiles({ page, pageSize }),
   });
 
+  const files = filesData?.items || [];
+  const totalPages = filesData ? Math.ceil(filesData.totalCount / pageSize) : 0;
+
   return {
     files,
     isLoading,
     error,
+    totalPages,
+    totalCount: filesData?.totalCount || 0,
   };
 };
 
-export const useProjectFiles = (projectId: string) => {
+export const useProjectFiles = (projectId: string, page: number = 1, pageSize: number = 10) => {
   const {
-    data: files = [],
+    data: filesData,
     isLoading,
     error,
   } = useQuery({
-    queryKey: ['project-files', projectId],
-    queryFn: () => apiClient.getProjectFiles(projectId),
+    queryKey: ['project-files', projectId, page, pageSize],
+    queryFn: () => apiClient.getProjectFiles(projectId, { page, pageSize }),
     enabled: !!projectId,
   });
 
+  const files = filesData?.items || [];
+  const totalPages = filesData ? Math.ceil(filesData.totalCount / pageSize) : 0;
+
   return {
     files,
     isLoading,
     error,
+    totalPages,
+    totalCount: filesData?.totalCount || 0,
   };
 };
 

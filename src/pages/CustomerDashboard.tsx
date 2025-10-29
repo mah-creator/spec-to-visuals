@@ -1,8 +1,10 @@
-import { useContext, useState } from "react";
+import { useContext, useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,7 +17,7 @@ import { AuthContext } from "../App";
 import { useProjects } from "@/hooks/useProjects";
 import { useRecentFiles } from "@/hooks/useFiles";
 import { API_BASE_URL } from "@/lib/api-client";
-import { getTimeDifference, cn } from "@/lib/utils";
+import { getTimeDifference, cn, formatTimestamp } from "@/lib/utils";
 import { 
   Calendar, 
   Clock, 
@@ -41,21 +43,35 @@ import {
 import { useNavigate } from "react-router-dom";
 import { useProfile } from "@/hooks/useProfile";
 import FileTypeIcon from "@/components/ui/FileTypeIcon";
+import { NotificationsDropdown } from "@/components/NotificationsDropdown";
+import { Pagination } from "@/components/ui/Pagination";
+import { useNotifications } from "@/hooks/useNotifications";
+import { getNotificationUrl } from "@/lib/utils";
 
 const CustomerDashboard = () => {
   const { profile } = useProfile();
   const [avatarTimestamp] = useState(Date.now());
   const { user, logout } = useContext(AuthContext);
   const navigate = useNavigate();
-  const { projects, isLoading } = useProjects();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [projectsPage, setProjectsPage] = useState(1);
+  const [filesPage, setFilesPage] = useState(1);
+  const [selectedStatus, setSelectedStatus] = useState<string>('all');
+  const [highlightedProjectId, setHighlightedProjectId] = useState<string | null>(null);
+  const projectsPageSize = 6;
+  const filesPageSize = 5;
+  const { projects, isLoading, totalPages: projectsTotalPages } = useProjects(
+    projectsPage, 
+    projectsPageSize, 
+    selectedStatus === 'all' ? undefined : selectedStatus
+  );
 
-  const notifications = [
-    { type: "task", message: "Task 'Homepage Design' has been completed", time: "2 hours ago", project: "E-commerce Website" },
-    { type: "comment", message: "New comment on 'Logo Review' task", time: "4 hours ago", project: "Brand Identity" },
-    { type: "file", message: "New design files uploaded", time: "6 hours ago", project: "E-commerce Website" }
-  ];
-
-  const { files: recentFiles, isLoading: filesLoading } = useRecentFiles();
+  const { files: recentFiles, isLoading: filesLoading, totalPages: filesTotalPages } = useRecentFiles(filesPage, filesPageSize);
+  
+  // Get real notifications
+  const { notifications: realNotifications, isLoading: notificationsLoading, markAsRead } = useNotifications(1, 5);
+  
+  const unreadNotifications = realNotifications.filter(n => !n.isRead);
 
   // Calculate stats
   const activeProjects = projects.filter(p => p.status === 'Active').length;
@@ -63,23 +79,101 @@ const CustomerDashboard = () => {
   const totalTasks = projects.reduce((sum, project) => sum + (project.tasksTotal || 0), 0);
   const completedTasks = projects.reduce((sum, project) => sum + (project.tasksCompleted || 0), 0);
 
+  const getNotificationIcon = (type: string) => {
+    switch (type) {
+      case 'task_created':
+      case 'task_updated':
+      case 'task_status_changed':
+        return <CheckCircle className="w-4 h-4" />;
+      case 'comment_added':
+        return <MessageSquare className="w-4 h-4" />;
+      case 'file_uploaded':
+        return <FileText className="w-4 h-4" />;
+      case 'project_status_changed':
+        return <TrendingUp className="w-4 h-4" />;
+      case 'invitation_received':
+        return <Users className="w-4 h-4" />;
+      default:
+        return <Bell className="w-4 h-4" />;
+    }
+  };
+
+  const getNotificationColor = (type: string, isRead: boolean) => {
+    if (isRead) return 'bg-gray-400';
+    
+    switch (type) {
+      case 'task_created':
+      case 'task_updated':
+      case 'task_status_changed':
+        return 'bg-green-500';
+      case 'comment_added':
+        return 'bg-blue-500';
+      case 'file_uploaded':
+        return 'bg-amber-500';
+      case 'project_status_changed':
+        return 'bg-purple-500';
+      case 'invitation_received':
+        return 'bg-indigo-500';
+      default:
+        return 'bg-gray-500';
+    }
+  };
+
+  const handleNotificationClick = (notification: any) => {
+    if (!notification.isRead) {
+      markAsRead(notification.id);
+    }
+    
+    const url = getNotificationUrl(notification.metadata);
+    if (url) {
+      navigate(url);
+    }
+  };
+
   const getStatusBadge = (status: string) => {
     const variants: Record<string, string> = {
       'Deleted': 'bg-red-100 text-red-800 border-red-200',
       'Active': 'bg-blue-100 text-blue-800 border-blue-200',
-      'Completed': 'bg-green-100 text-green-800 border-green-200'
+      'Completed': 'bg-green-100 text-green-800 border-green-200',
+      'Pending_Complete_Approval': 'bg-amber-100 text-amber-800 border-amber-200',
+      'Pending_Delete_Approval': 'bg-orange-100 text-orange-800 border-orange-200'
     };
     return variants[status] || 'bg-gray-100 text-gray-800 border-gray-200';
   };
 
   const getStatusIcon = (status: string) => {
-    switch (status.toLowerCase()) {
-      case 'active': return <PlayCircle className="w-4 h-4 text-blue-600" />;
-      case 'completed': return <CheckCircle2 className="w-4 h-4 text-green-600" />;
-      case 'pending_review': return <Eye className="w-4 h-4 text-amber-600" />;
+    switch (status) {
+      case 'Active': return <PlayCircle className="w-4 h-4 text-blue-600" />;
+      case 'Completed': return <CheckCircle2 className="w-4 h-4 text-green-600" />;
+      case 'Pending_Complete_Approval': return <Clock className="w-4 h-4 text-amber-600" />;
+      case 'Pending_Delete_Approval': return <AlertTriangle className="w-4 h-4 text-orange-600" />;
+      case 'Deleted': return <CircleX className="w-4 h-4 text-red-600" />;
       default: return <FileText className="w-4 h-4 text-gray-600" />;
     }
   };
+
+  // Handle deep linking to projects
+  useEffect(() => {
+    const projectId = searchParams.get('projectId');
+    if (projectId) {
+      setHighlightedProjectId(projectId);
+      
+      // Scroll to project
+      setTimeout(() => {
+        const projectElement = document.getElementById(`project-${projectId}`);
+        if (projectElement) {
+          projectElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 100);
+
+      // Clear highlight and URL after animation
+      setTimeout(() => {
+        setHighlightedProjectId(null);
+        searchParams.delete('projectId');
+        setSearchParams(searchParams, { replace: true });
+      }, 3000);
+    }
+  }, [searchParams, setSearchParams]);
 
   return (
     <div className="min-h-screen bg-gradient-subtle">
@@ -98,14 +192,7 @@ const CustomerDashboard = () => {
             </div>
             
             <div className="flex items-center gap-4">
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="relative hover:bg-gray-100 transition-colors"
-              >
-                <Bell className="w-4 h-4 text-gray-600" />
-                <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-              </Button>
+              <NotificationsDropdown />
               
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -169,6 +256,46 @@ const CustomerDashboard = () => {
                   <p className="text-sm text-gray-600 mt-1">Track progress and manage deliverables</p>
                 </div>
               </div>
+
+              {/* Status Filter Tabs */}
+              <Tabs 
+                value={selectedStatus} 
+                onValueChange={(value) => {
+                  setSelectedStatus(value);
+                  setProjectsPage(1); // Reset to first page when changing status
+                }}
+                className="mb-6"
+              >
+                <TabsList className="grid w-full grid-cols-4 bg-gray-100/50">
+                  <TabsTrigger 
+                    value="all" 
+                    className="data-[state=active]:bg-white data-[state=active]:text-gray-900"
+                  >
+                    All Projects
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="Active" 
+                    className="data-[state=active]:bg-blue-100 data-[state=active]:text-blue-800"
+                  >
+                    <PlayCircle className="w-4 h-4 mr-2" />
+                    Active
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="Completed" 
+                    className="data-[state=active]:bg-green-100 data-[state=active]:text-green-800"
+                  >
+                    <CheckCircle2 className="w-4 h-4 mr-2" />
+                    Completed
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="Deleted" 
+                    className="data-[state=active]:bg-red-100 data-[state=active]:text-red-800"
+                  >
+                    <CircleX className="w-4 h-4 mr-2" />
+                    Deleted
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
               
               <div className="space-y-4">
                 {isLoading ? (
@@ -196,13 +323,17 @@ const CustomerDashboard = () => {
                   </Card>
                 ) : (
                   projects.map((project) => {
-                    const progress = project.progress * 100 || 0;
+                    const progress = project.progress || 0;
                     const isOverdue = project.dueDate && new Date(project.dueDate) < new Date();
                     
                     return (
                       <Card 
-                        key={project.id} 
-                        className="border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer group"
+                        key={project.id}
+                        id={`project-${project.id}`}
+                        className={cn(
+                          "border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer group",
+                          highlightedProjectId === project.id && "flash-highlight"
+                        )}
                         onClick={() => navigate(`/project/${project.id}`)}
                       >
                         <CardContent className="p-6">
@@ -220,7 +351,9 @@ const CustomerDashboard = () => {
                               </div>
                             </div>
                             <Badge className={cn("border px-3 py-1 rounded-full text-sm font-medium", getStatusBadge(project.status))}>
-                              {project.status.replace('_', ' ')}
+                              {project.status.split('_').map((word, i) => 
+                                i === 0 ? word.charAt(0).toUpperCase() + word.slice(1) : word
+                              ).join(' ')}
                             </Badge>
                           </div>
                           
@@ -262,6 +395,14 @@ const CustomerDashboard = () => {
                   })
                 )}
               </div>
+              {projectsTotalPages > 1 && (
+                <Pagination 
+                  currentPage={projectsPage}
+                  totalPages={projectsTotalPages}
+                  onPageChange={setProjectsPage}
+                  className="mt-6"
+                />
+              )}
             </div>
 
             {/* Recent Files */}
@@ -313,6 +454,14 @@ const CustomerDashboard = () => {
                       ))}
                     </div>
                   )}
+                  {filesTotalPages > 1 && (
+                    <Pagination 
+                      currentPage={filesPage}
+                      totalPages={filesTotalPages}
+                      onPageChange={setFilesPage}
+                      className="mt-4"
+                    />
+                  )}
                 </CardContent>
               </Card>
             </div>
@@ -324,47 +473,75 @@ const CustomerDashboard = () => {
             <div>
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-xl font-semibold text-gray-900">Notifications</h3>
-                <Badge className="bg-blue-100 text-blue-800 border-blue-200">
-                  {notifications.length} new
-                </Badge>
+                {unreadNotifications.length > 0 && (
+                  <Badge className="bg-blue-100 text-blue-800 border-blue-200">
+                    {unreadNotifications.length} new
+                  </Badge>
+                )}
               </div>
               <Card className="border border-gray-200 shadow-sm">
                 <CardContent className="p-6">
-                  <div className="space-y-4">
-                    {notifications.map((notification, index) => (
-                      <div key={index} className="flex gap-3 group">
-                        <div className="flex flex-col items-center">
-                          <div className={cn(
-                            "w-2 h-2 rounded-full mt-2",
-                            notification.type === 'task' ? 'bg-green-500' :
-                            notification.type === 'comment' ? 'bg-blue-500' :
-                            notification.type === 'file' ? 'bg-amber-500' : 'bg-purple-500'
-                          )}></div>
-                          {index < notifications.length - 1 && (
-                            <div className="w-0.5 h-8 bg-gray-200 mt-1"></div>
+                  {notificationsLoading ? (
+                    <div className="text-center py-8">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+                      <p className="text-gray-500 mt-2 text-sm">Loading notifications...</p>
+                    </div>
+                  ) : realNotifications.length === 0 ? (
+                    <div className="text-center py-8">
+                      <Bell className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+                      <p className="text-gray-500 text-sm">No notifications yet</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {realNotifications.map((notification, index) => (
+                        <div 
+                          key={notification.id} 
+                          className={cn(
+                            "flex gap-3 group cursor-pointer rounded-lg p-2 -m-2 transition-colors",
+                            !notification.isRead && "bg-blue-50/50 hover:bg-blue-100/50",
+                            notification.isRead && "hover:bg-gray-50"
                           )}
+                          onClick={() => handleNotificationClick(notification)}
+                        >
+                          <div className="flex flex-col items-center">
+                            <div className={cn(
+                              "w-2 h-2 rounded-full mt-2",
+                              getNotificationColor(notification.type, notification.isRead)
+                            )}></div>
+                            {index < realNotifications.length - 1 && (
+                              <div className="w-0.5 h-full bg-gray-200 mt-1"></div>
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-start justify-between gap-2">
+                              <p className={cn(
+                                "text-sm transition-colors",
+                                !notification.isRead ? "text-gray-900 font-medium" : "text-gray-700",
+                                "group-hover:text-gray-900"
+                              )}>
+                                {notification.message}
+                              </p>
+                              <div className={cn(
+                                "flex-shrink-0",
+                                getNotificationColor(notification.type, notification.isRead).replace('bg-', 'text-')
+                              )}>
+                                {getNotificationIcon(notification.type)}
+                              </div>
+                            </div>
+                            <p className="text-xs text-gray-500 flex items-center gap-1 mt-1">
+                              <Clock className="w-3 h-3" />
+                              {formatTimestamp(notification.timestamp)}
+                            </p>
+                            {!notification.isRead && (
+                              <Badge className="bg-blue-500 text-white border-0 text-xs mt-1 px-1.5 py-0">
+                                New
+                              </Badge>
+                            )}
+                          </div>
                         </div>
-                        <div className="flex-1 pb-4 group-last:pb-0">
-                          <p className="text-sm text-gray-700 group-hover:text-gray-900 transition-colors">
-                            {notification.message}
-                          </p>
-                          <p className="text-xs text-gray-500 mt-1">{notification.project}</p>
-                          <p className="text-xs text-gray-500 flex items-center gap-1 mt-1">
-                            <Clock className="w-3 h-3" />
-                            {notification.time}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    className="w-full mt-4 text-gray-600 hover:text-gray-900 hover:bg-gray-50"
-                  >
-                    View all notifications
-                  </Button>
+                      ))}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </div>

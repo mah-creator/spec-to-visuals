@@ -1,8 +1,10 @@
-import { useState, useContext } from "react";
+import { useState, useContext, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,31 +27,47 @@ import {
   BarChart3,
   CheckCircle,
   AlertCircle,
+  AlertTriangle,
   TrendingUp,
   UserCircle,
   ArrowUpRight,
   PlayCircle,
   Eye,
-  CheckCircle2
+  CheckCircle2,
+  CircleX
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useCompletedTasks, usePendingTasks } from "@/hooks/useTasks";
 import { useProfile } from "@/hooks/useProfile";
-import { API_BASE_URL } from "@/lib/api-client";
+import { API_BASE_URL, apiClient } from "@/lib/api-client";
 import { cn } from "@/lib/utils";
+import { NotificationsDropdown } from "@/components/NotificationsDropdown";
+import { Pagination } from "@/components/ui/Pagination";
+import { UserStats } from "@/types/api";
 
 const FreelancerDashboard = () => {
   const { profile } = useProfile();
   const [avatarTimestamp] = useState(Date.now());
   const { user, logout } = useContext(AuthContext);
   const navigate = useNavigate();
-  const { projects, isLoading } = useProjects();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [projectsPage, setProjectsPage] = useState(1);
+  const [selectedStatus, setSelectedStatus] = useState<string>('all');
+  const [highlightedProjectId, setHighlightedProjectId] = useState<string | null>(null);
+  const projectsPageSize = 6;
+  const { projects, isLoading, totalPages } = useProjects(
+    projectsPage, 
+    projectsPageSize,
+    selectedStatus === 'all' ? undefined : selectedStatus
+  );
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
   // Calculate stats from real data
   const activeProjects = projects.filter(p => p.status === 'Active').length;
   const completedTasks = useCompletedTasks()?.task?.length ?? 0;
   const pendingTasks = usePendingTasks()?.task?.length ?? 0;
+
+  const [stats, setStats] = useState<UserStats | null>(null);
 
   const recentActivity = [
     { type: "task", message: "Task 'Homepage Design' marked as completed", time: "2 hours ago" },
@@ -58,23 +76,65 @@ const FreelancerDashboard = () => {
     { type: "project", message: "New project invitation sent to Creative Agency", time: "1 day ago" }
   ];
 
+  useEffect(() => {
+      if (user) {
+        fetchStats();
+      }
+    }, [user]);
+
+  const fetchStats = async () => {
+      try {
+          const data = await apiClient.getUserStats();
+          setStats(data);
+      } catch (error) {
+        console.error('Failed to fetch stats:', error);
+      }
+    };
+
   const getStatusBadge = (status: string) => {
     const variants: Record<string, string> = {
       'Deleted': 'bg-red-100 text-red-800 border-red-200',
       'Active': 'bg-blue-100 text-blue-800 border-blue-200',
-      'Completed': 'bg-green-100 text-green-800 border-green-200'
+      'Completed': 'bg-green-100 text-green-800 border-green-200',
+      'Pending_Complete_Approval': 'bg-amber-100 text-amber-800 border-amber-200',
+      'Pending_Delete_Approval': 'bg-orange-100 text-orange-800 border-orange-200'
     };
     return variants[status] || 'bg-gray-100 text-gray-800 border-gray-200';
   };
 
   const getStatusIcon = (status: string) => {
-    switch (status.toLowerCase()) {
-      case 'active': return <PlayCircle className="w-4 h-4 text-blue-600" />;
-      case 'completed': return <CheckCircle2 className="w-4 h-4 text-green-600" />;
-      case 'pending_review': return <Eye className="w-4 h-4 text-amber-600" />;
+    switch (status) {
+      case 'Active': return <PlayCircle className="w-4 h-4 text-blue-600" />;
+      case 'Completed': return <CheckCircle2 className="w-4 h-4 text-green-600" />;
+      case 'Pending_Complete_Approval': return <Clock className="w-4 h-4 text-amber-600" />;
+      case 'Pending_Delete_Approval': return <AlertTriangle className="w-4 h-4 text-orange-600" />;
+      case 'Deleted': return <CircleX className="w-4 h-4 text-red-600" />;
       default: return <FileText className="w-4 h-4 text-gray-600" />;
     }
   };
+
+  // Handle deep linking to projects
+  useEffect(() => {
+    const projectId = searchParams.get('projectId');
+    if (projectId) {
+      setHighlightedProjectId(projectId);
+      
+      // Scroll to project
+      setTimeout(() => {
+        const projectElement = document.getElementById(`project-${projectId}`);
+        if (projectElement) {
+          projectElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 100);
+
+      // Clear highlight and URL after animation
+      setTimeout(() => {
+        setHighlightedProjectId(null);
+        searchParams.delete('projectId');
+        setSearchParams(searchParams, { replace: true });
+      }, 3000);
+    }
+  }, [searchParams, setSearchParams]);
 
   return (
     <div className="min-h-screen bg-gradient-subtle">
@@ -93,14 +153,7 @@ const FreelancerDashboard = () => {
             </div>
             
             <div className="flex items-center gap-4">
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="relative hover:bg-gray-100 transition-colors"
-              >
-                <Bell className="w-4 h-4 text-gray-600" />
-                <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-              </Button>
+              <NotificationsDropdown />
               
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -152,7 +205,7 @@ const FreelancerDashboard = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600 mb-1">Active Projects</p>
-                  <p className="text-2xl font-bold text-gray-900">{activeProjects}</p>
+                  <p className="text-2xl font-bold text-gray-900">{stats?.projectsCount}</p>
                   <p className="text-xs text-gray-500 mt-1">Currently working on</p>
                 </div>
                 <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
@@ -167,7 +220,7 @@ const FreelancerDashboard = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600 mb-1">Tasks Completed</p>
-                  <p className="text-2xl font-bold text-gray-900">{completedTasks}</p>
+                  <p className="text-2xl font-bold text-gray-900">{stats?.tasksCompleted}</p>
                   <p className="text-xs text-gray-500 mt-1">All time</p>
                 </div>
                 <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
@@ -182,7 +235,7 @@ const FreelancerDashboard = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600 mb-1">Pending Tasks</p>
-                  <p className="text-2xl font-bold text-gray-900">{pendingTasks}</p>
+                  <p className="text-2xl font-bold text-gray-900">{stats?.tasksPending}</p>
                   <p className="text-xs text-gray-500 mt-1">Requires attention</p>
                 </div>
                 <div className="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center">
@@ -216,7 +269,7 @@ const FreelancerDashboard = () => {
           <div className="lg:col-span-2">
             <div className="flex items-center justify-between mb-6">
               <div>
-                <h2 className="text-xl font-semibold text-gray-900">Active Projects</h2>
+                <h2 className="text-xl font-semibold text-gray-900">Your Projects</h2>
                 <p className="text-sm text-gray-600 mt-1">Manage your ongoing projects and tasks</p>
               </div>
               <Button 
@@ -227,6 +280,46 @@ const FreelancerDashboard = () => {
                 New Project
               </Button>
             </div>
+
+            {/* Status Filter Tabs */}
+            <Tabs 
+              value={selectedStatus} 
+              onValueChange={(value) => {
+                setSelectedStatus(value);
+                setProjectsPage(1); // Reset to first page when changing status
+              }}
+              className="mb-6"
+            >
+              <TabsList className="grid w-full grid-cols-4 bg-gray-100/50">
+                <TabsTrigger 
+                  value="all" 
+                  className="data-[state=active]:bg-white data-[state=active]:text-gray-900"
+                >
+                  All Projects
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="Active" 
+                  className="data-[state=active]:bg-blue-100 data-[state=active]:text-blue-800"
+                >
+                  <PlayCircle className="w-4 h-4 mr-2" />
+                  Active
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="Completed" 
+                  className="data-[state=active]:bg-green-100 data-[state=active]:text-green-800"
+                >
+                  <CheckCircle2 className="w-4 h-4 mr-2" />
+                  Completed
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="Deleted" 
+                  className="data-[state=active]:bg-red-100 data-[state=active]:text-red-800"
+                >
+                  <CircleX className="w-4 h-4 mr-2" />
+                  Deleted
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
             
             <div className="space-y-4">
               {isLoading ? (
@@ -261,13 +354,17 @@ const FreelancerDashboard = () => {
                 </Card>
               ) : (
                 projects.map((project) => {
-                  const progress = project.progress * 100 || 0;
+                  const progress = project.progress || 0;
                   const isOverdue = project.dueDate && new Date(project.dueDate) < new Date();
                   
                   return (
                     <Card 
-                      key={project.id} 
-                      className="border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer group"
+                      key={project.id}
+                      id={`project-${project.id}`}
+                      className={cn(
+                        "border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer group",
+                        highlightedProjectId === project.id && "flash-highlight"
+                      )}
                       onClick={() => navigate(`/project/${project.id}`)}
                     >
                       <CardContent className="p-6">
@@ -287,7 +384,9 @@ const FreelancerDashboard = () => {
                             </div>
                           </div>
                           <Badge className={cn("border px-3 py-1 rounded-full text-sm font-medium", getStatusBadge(project.status))}>
-                            {project.status.replace('_', ' ')}
+                            {project.status.split('_').map((word, i) => 
+                              i === 0 ? word.charAt(0).toUpperCase() + word.slice(1) : word
+                            ).join(' ')}
                           </Badge>
                         </div>
                         
@@ -328,6 +427,14 @@ const FreelancerDashboard = () => {
                 })
               )}
             </div>
+            {totalPages > 1 && (
+              <Pagination 
+                currentPage={projectsPage}
+                totalPages={totalPages}
+                onPageChange={setProjectsPage}
+                className="mt-6"
+              />
+            )}
           </div>
 
           {/* Activity Feed */}

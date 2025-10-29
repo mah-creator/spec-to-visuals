@@ -128,3 +128,28 @@
     @apply bg-background text-foreground;
   }
 }
+
+@layer utilities {
+  @keyframes flash-highlight {
+    0%, 100% {
+      box-shadow: 0 0 0 0 hsl(var(--primary) / 0);
+      border-color: hsl(var(--border));
+    }
+    25% {
+      box-shadow: 0 0 0 4px hsl(var(--primary) / 0.3);
+      border-color: hsl(var(--primary));
+    }
+    50% {
+      box-shadow: 0 0 0 8px hsl(var(--primary) / 0.2);
+      border-color: hsl(var(--primary));
+    }
+    75% {
+      box-shadow: 0 0 0 4px hsl(var(--primary) / 0.3);
+      border-color: hsl(var(--primary));
+    }
+  }
+
+  .flash-highlight {
+    animation: flash-highlight 2s ease-in-out 3;
+  }
+}

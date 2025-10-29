@@ -21,7 +21,6 @@ export interface CreateTaskDto {
   title: string;
   description: string;
   dueDate?: string;
-  startDate?: string;
 }
 
 export interface UpdateTaskStatusDto {
@@ -58,7 +57,7 @@ export interface Project {
   createdAt: string;
   updatedAt: string;
   // Additional fields for dashboard display
-  status?: 'Active' | 'Completed' | 'Deleted';
+  status?: 'Active' | 'Completed' | 'Deleted' | 'Pending_Complete_Approval' | 'Pending_Delete_Approval';
   progress?: number;
   client?: string;
   freelancer?: string;
@@ -74,19 +73,21 @@ export interface Task {
   description: string;
   status: 'ToDo' | 'In_progress' | 'Pending_review' | 'Done' | 'Canceled';
   dueDate: string;
-  startDate?: string;
   createdAt: string;
   updatedAt: string;
   // Additional fields for UI display
   assignee?: string;
-  comments?: Array<{
-    id: number;
-    author: string;
-    message: string;
-    time: string;
-  }>;
+  comments?: Array<Comment>;
   filesCount?: number;
   isOverdue?: boolean;
+}
+
+export interface Comment {
+  id: number;
+  taskId: string;
+  author: string;
+  message: string;
+  time: string;
 }
 
 export interface FileUploadRequest {
@@ -124,6 +125,7 @@ export interface UserProfile {
 }
 
 export interface UserStats {
+  tasksPending: number;
   projectsCount: number;
   tasksCompleted: number;
   filesUploaded: number;
@@ -138,6 +140,64 @@ export interface UpdateProfileDto {
 export interface ChangePasswordDto {
   currentPassword: string;
   newPassword: string;
+}
+
+export type NotificationType = 
+  | 'task_status_changed' 
+  | 'task_approved' 
+  | 'project_status_updated' 
+  | 'invited_to_project' 
+  | 'invitation_accepted' 
+  | 'invitation_declined' 
+  | 'new_comment';
+
+export interface NotificationMetadata {
+  resourceType?: 'project' | 'task' | 'comment' | 'file' | 'invitation';
+  resourceId?: string;
+  projectId?: string;
+  taskId?: string;
+  fileId?: string;
+}
+
+export interface Notification {
+  id: string;
+  type: NotificationType;
+  title: string;
+  message: string;
+  timestamp: string;
+  actionUrl: string;
+  isRead: boolean;
+  metadata?: NotificationMetadata;
+}
+
+export interface Invitation {
+  id: string;
+  projectId: string;
+  projectTitle: string;
+  inviter: {
+    id: string;
+    email: string;
+    name: string;
+    role: string;
+  };
+  invitationDate: string;
+  status: 'Pending' | 'Accepted' | 'Declined';
+  isExpired: boolean;
+}
+
+// Pagination types
+export interface PagedList<T> {
+  items: T[];
+  page: number | null;
+  pageSize: number | null;
+  totalCount: number;
+  hasNext: boolean;
+  hasPrevious: boolean;
+}
+
+export interface PaginationParams {
+  page?: number;
+  pageSize?: number;
 }
 
 export class ApiError extends Error {

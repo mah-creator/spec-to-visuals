@@ -30,6 +30,7 @@ import {
 } from "lucide-react";
 import { useProfile } from "@/hooks/useProfile";
 import { API_BASE_URL } from "@/lib/api-client";
+import { NotificationsDropdown } from "@/components/NotificationsDropdown";
 
 const AdminDashboard = () => {
   const { profile } = useProfile();
@@ -98,10 +99,7 @@ const AdminDashboard = () => {
             </div>
             
             <div className="flex items-center gap-4">
-              <Button variant="ghost" size="sm" className="relative">
-                <Bell className="w-4 h-4" />
-                <span className="absolute -top-1 -right-1 w-2 h-2 bg-danger rounded-full"></span>
-              </Button>
+              <NotificationsDropdown />
               
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>

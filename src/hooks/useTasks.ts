@@ -1,31 +1,101 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api-client';
-import { Task, CreateTaskDto, UpdateTaskStatusDto } from '@/types/api';
+import { Task, CreateTaskDto, UpdateTaskStatusDto, Comment } from '@/types/api';
 import { useToast } from '@/hooks/use-toast';
+import { useEffect } from 'react';
+import { signalRService } from '@/lib/signalr';
+import { useProjects } from './useProjects';
 
-export const useTasks = (projectId: string | undefined) => {
+export const useTasks = (projectId: string | undefined, page: number = 1, pageSize: number = 10) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { updateProjectStatus } = useProjects();
 
   const {
-    data: tasks = [],
+    data: tasksData,
     isLoading,
     error,
   } = useQuery({
-    queryKey: ['tasks', projectId],
-    queryFn: () => apiClient.getTasks(projectId!),
+    queryKey: ['tasks', projectId, page, pageSize],
+    queryFn: () => apiClient.getTasks(projectId!, { page, pageSize }),
     enabled: !!projectId,
   });
 
-  const createTaskMutation = useMutation({
-    mutationFn: (task: CreateTaskDto) => {
-      // Automatically add the current date as the start date
-      const taskWithStartDate = {
-        ...task,
-        startDate: new Date().toISOString(),
+  // Set up SignalR connection for real-time comments from OTHER users
+  useEffect(() => {
+    if (!projectId) return;
+
+    const token = apiClient.getToken();
+    if (!token) return;
+
+    const connectSignalR = async () => {
+      try {
+        if (!signalRService.isConnected()) {
+          await signalRService.connect(token);
+        }
+
+       // In the SignalR effect in useTasks
+const unsubscribe = signalRService.onComment((newComment: Comment) => {
+  console.log('Received real-time comment from other user:', newComment);
+  
+  // Update the tasks cache with the new comment from other users
+  queryClient.setQueryData(
+    ['tasks', projectId, page, pageSize],
+    (old: any) => {
+      if (!old?.items) return old;
+      
+      return {
+        ...old,
+        items: old.items.map((task: any) => {
+          if (task.id !== newComment.taskId) return task;
+          
+          const existingComments = task.comments || [];
+          
+          // Check if this comment already exists (in case of any overlap)
+          const commentAlreadyExists = existingComments.some(
+            (comment: Comment) => comment.id === newComment.id
+          );
+          
+          if (commentAlreadyExists) {
+            console.log('Comment already exists, skipping duplicate');
+            return task;
+          }
+          
+          // Add the new comment from other user
+          return {
+            ...task,
+            comments: [...existingComments, newComment]
+          };
+        })
       };
-      return apiClient.createTask(projectId!, taskWithStartDate);
-    },
+    }
+  );
+
+  // Show notification for comments from other users
+  toast({
+    title: 'New comment',
+    description: `${newComment.author}: ${newComment.message.substring(0, 50)}${newComment.message.length > 50 ? '...' : ''}`,
+  });
+});
+
+        return unsubscribe;
+      } catch (error) {
+        console.error('Failed to connect to SignalR for comments:', error);
+      }
+    };
+
+    const cleanupPromise = connectSignalR();
+
+    return () => {
+      cleanupPromise.then(cleanup => cleanup?.());
+    };
+  }, [projectId, page, pageSize, queryClient, toast]);
+
+  const tasks = tasksData?.items || [];
+  const totalPages = tasksData ? Math.ceil(tasksData.totalCount / pageSize) : 0;
+
+  const createTaskMutation = useMutation({
+    mutationFn: (task: CreateTaskDto) => apiClient.createTask(projectId!, task),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tasks', projectId] });
       toast({
@@ -45,8 +115,11 @@ export const useTasks = (projectId: string | undefined) => {
   const updateTaskStatusMutation = useMutation({
     mutationFn: ({ taskId, status }: { taskId: string; status: string }) =>
       apiClient.updateTaskStatus(projectId!, taskId, { status }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['tasks', projectId] });
+    onSuccess: async (_, variables) => {
+      // Invalidate and refetch tasks to get updated data
+      await queryClient.invalidateQueries({ queryKey: ['tasks', projectId] });
+      queryClient.invalidateQueries({ queryKey: ['project', projectId] });
+      
       toast({
         title: "Task updated",
         description: "Task status has been updated successfully.",
@@ -65,6 +138,8 @@ export const useTasks = (projectId: string | undefined) => {
     tasks,
     isLoading,
     error,
+    totalPages,
+    totalCount: tasksData?.totalCount || 0,
     createTask: createTaskMutation.mutate,
     updateTaskStatus: updateTaskStatusMutation.mutate,
     isCreating: createTaskMutation.isPending,
@@ -89,6 +164,8 @@ export const useTask = (projectId: string | undefined, taskId: string | undefine
     error,
   };
 };
+
+
 
 export const useCompletedTasks = () => {
   const {
@@ -124,21 +201,40 @@ export const usePendingTasks = () => {
   };
 };
 
-export const useTaskComments = () => {
+export const useTaskComments = (projectId: string | undefined, page: number = 1, pageSize: number = 10) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
   const addCommentMutation = useMutation({
-    mutationFn: ({ projectId, taskId, comment }: { projectId: string; taskId: string; comment: string }) =>
-      apiClient.addTaskComment(projectId, taskId, comment),
-    onSuccess: (_, variables) => {
-      toast({
-        title: "Comment added",
-        description: "Your comment has been added successfully.",
-      });
-      // Invalidate the task query to refresh comments
-      queryClient.invalidateQueries({ queryKey: ['task', variables.projectId, variables.taskId] });
-      queryClient.invalidateQueries({ queryKey: ['tasks', variables.projectId] });
+    mutationFn: async ({ projectId, taskId, comment }: { projectId: string; taskId: string; comment: string }) => {
+      const newComment = await apiClient.addTaskComment(projectId, taskId, comment);
+      return newComment;
+    },
+    onSuccess: (newComment: Comment, variables) => {
+      // Use the SAME query key as SignalR and the main tasks query
+      queryClient.setQueryData(
+        ['tasks', variables.projectId, page, pageSize], // Add page and pageSize
+        (old: any) => {
+          if (!old?.items) return old;
+          
+          return {
+            ...old,
+            items: old.items.map((task: any) => 
+              task.id === variables.taskId 
+                ? { 
+                    ...task, 
+                    comments: [...(task.comments || []), newComment] 
+                  }
+                : task
+            )
+          };
+        }
+      );
+
+      // toast({
+      //   title: "Comment added",
+      //   description: "Your comment has been added successfully.",
+      // });
     },
     onError: (error: any) => {
       toast({

@@ -13,7 +13,10 @@ import {
   UserStats,
   UpdateProfileDto,
   ChangePasswordDto,
-  ApiError 
+  Notification,
+  Invitation,
+  ApiError, 
+  Comment
 } from '@/types/api';
 
 export const API_BASE_URL = import.meta.env.REACT_APP_API_URL || 'https://mit-programming-conditioning-elsewhere.trycloudflare.com';
@@ -123,8 +126,13 @@ class ApiClient {
   }
 
   // Project endpoints
-  async getProjects(): Promise<Project[]> {
-    return this.request<Project[]>('/api/Projects');
+  async getProjects(params?: { page?: number; pageSize?: number; status?: string }): Promise<import('@/types/api').PagedList<Project>> {
+    const queryParams = new URLSearchParams();
+    if (params?.page) queryParams.append('page', params.page.toString());
+    if (params?.pageSize) queryParams.append('pageSize', params.pageSize.toString());
+    if (params?.status) queryParams.append('status', params.status);
+    const queryString = queryParams.toString();
+    return this.request<import('@/types/api').PagedList<Project>>(`/api/Projects${queryString ? `?${queryString}` : ''}`);
   }
 
   async getProject(id: string): Promise<Project> {
@@ -146,8 +154,12 @@ class ApiClient {
   }
 
   // Task endpoints
-  async getTasks(projectId: string): Promise<Task[]> {
-    return this.request<Task[]>(`/api/projects/${projectId}/Tasks`);
+  async getTasks(projectId: string, params?: { page?: number; pageSize?: number }): Promise<import('@/types/api').PagedList<Task>> {
+    const queryParams = new URLSearchParams();
+    if (params?.page) queryParams.append('page', params.page.toString());
+    if (params?.pageSize) queryParams.append('pageSize', params.pageSize.toString());
+    const queryString = queryParams.toString();
+    return this.request<import('@/types/api').PagedList<Task>>(`/api/projects/${projectId}/Tasks${queryString ? `?${queryString}` : ''}`);
   }
 
   async getCompletedTasks(): Promise<Task[]> {
@@ -177,6 +189,16 @@ class ApiClient {
     return this.request<void>(`/api/projects/${projectId}/Tasks/${taskId}/status`, {
       method: 'PATCH',
       body: JSON.stringify(status),
+    });
+  }
+
+  async updateProjectStatus(
+    projectId: string,
+    status: string
+  ): Promise<void> {
+    return this.request<void>(`/api/projects/${projectId}/status`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status }),
     });
   }
 
@@ -244,24 +266,44 @@ class ApiClient {
     });
   }
 
-  async getTaskFiles(taskId: string): Promise<FileResponse[]> {
-    return this.request<FileResponse[]>(`/api/Files/task/${taskId}`);
+  async getTaskFiles(taskId: string, params?: { page?: number; pageSize?: number }): Promise<import('@/types/api').PagedList<FileResponse>> {
+    const queryParams = new URLSearchParams();
+    if (params?.page) queryParams.append('page', params.page.toString());
+    if (params?.pageSize) queryParams.append('pageSize', params.pageSize.toString());
+    const queryString = queryParams.toString();
+    return this.request<import('@/types/api').PagedList<FileResponse>>(`/api/Files/task/${taskId}${queryString ? `?${queryString}` : ''}`);
   }
 
-  async getRecentFiles(): Promise<FileResponse[]> {
-    return this.request<FileResponse[]>(`/api/Files/recent`);
+  async getRecentFiles(params?: { page?: number; pageSize?: number }): Promise<import('@/types/api').PagedList<FileResponse>> {
+    const queryParams = new URLSearchParams();
+    if (params?.page) queryParams.append('page', params.page.toString());
+    if (params?.pageSize) queryParams.append('pageSize', params.pageSize.toString());
+    const queryString = queryParams.toString();
+    return this.request<import('@/types/api').PagedList<FileResponse>>(`/api/Files/recent${queryString ? `?${queryString}` : ''}`);
   }
 
-  async getProjectFiles(projectId: string): Promise<FileResponse[]> {
-    return this.request<FileResponse[]>(`/api/Files/project/${projectId}`);
+  async getProjectFiles(projectId: string, params?: { page?: number; pageSize?: number }): Promise<import('@/types/api').PagedList<FileResponse>> {
+    const queryParams = new URLSearchParams();
+    if (params?.page) queryParams.append('page', params.page.toString());
+    if (params?.pageSize) queryParams.append('pageSize', params.pageSize.toString());
+    const queryString = queryParams.toString();
+    return this.request<import('@/types/api').PagedList<FileResponse>>(`/api/Files/project/${projectId}${queryString ? `?${queryString}` : ''}`);
   }
 
-  async addTaskComment(projectId: string, taskId: string, comment: string): Promise<void> {
-    return this.request<void>(`/api/projects/${projectId}/Tasks/${taskId}/comment`, {
-      method: 'POST',
-      body: JSON.stringify(comment),
-    });
-  }
+  // async addTaskComment(projectId: string, taskId: string, comment: Comment): Promise<void> {
+  //   return this.request<Comment>(`/api/projects/${projectId}/Tasks/${taskId}/comment`, {
+  //     method: 'POST',
+  //     body: JSON.stringify(comment),
+  //   });
+  // }
+
+  async addTaskComment(projectId: string, taskId: string, comment: string): Promise<Comment> {
+  const response = await this.request<Comment>(`/api/projects/${projectId}/Tasks/${taskId}/comment`, {
+    method: 'POST',
+    body: JSON.stringify(comment),
+  });
+  return response;
+}
 
   // Admin endpoints
   async suspendUser(userId: string): Promise<void> {
@@ -334,6 +376,56 @@ class ApiClient {
 
   async getUserStats(): Promise<UserStats> {
     return this.request<UserStats>(`/api/users/stats`);
+  }
+
+  // Notification endpoints
+  async getNotifications(params?: { page?: number; pageSize?: number }): Promise<import('@/types/api').PagedList<Notification>> {
+    const queryParams = new URLSearchParams();
+    if (params?.page) queryParams.append('page', params.page.toString());
+    if (params?.pageSize) queryParams.append('pageSize', params.pageSize.toString());
+    const queryString = queryParams.toString();
+    return this.request<import('@/types/api').PagedList<Notification>>(`/api/Notification${queryString ? `?${queryString}` : ''}`);
+  }
+
+  async markNotificationAsRead(id: string): Promise<void> {
+    return this.request<void>(`/api/Notification/${id}/read`, {
+      method: 'PATCH',
+    });
+  }
+
+  async markAllNotificationAsRead(): Promise<void> {
+    return this.request<void>(`/api/Notification/read-all`, {
+      method: 'PATCH',
+    });
+  }
+
+  // Invitation endpoints
+  async getInvitations(params?: { page?: number; pageSize?: number }): Promise<import('@/types/api').PagedList<Invitation>> {
+    const queryParams = new URLSearchParams();
+    if (params?.page) queryParams.append('page', params.page.toString());
+    if (params?.pageSize) queryParams.append('pageSize', params.pageSize.toString());
+    const queryString = queryParams.toString();
+    return this.request<import('@/types/api').PagedList<Invitation>>(`/api/Invitation${queryString ? `?${queryString}` : ''}`);
+  }
+
+  async getInvitationsByStatus(params?: {status: string; page?: number; pageSize?: number }): Promise<import('@/types/api').PagedList<Invitation>> {
+    const queryParams = new URLSearchParams();
+    if (params?.page) queryParams.append('page', params.page.toString());
+    if (params?.pageSize) queryParams.append('pageSize', params.pageSize.toString());
+    const queryString = queryParams.toString();
+    return this.request<import('@/types/api').PagedList<Invitation>>(`/api/Invitation/status/${params.status}${queryString ? `?${queryString}` : ''}`);
+  }
+
+  async acceptInvitation(invitationId: string): Promise<void> {
+    return this.request<void>(`/api/Invitation/${invitationId}/accept`, {
+      method: 'PUT',
+    });
+  }
+
+  async declineInvitation(invitationId: string): Promise<void> {
+    return this.request<void>(`/api/Invitation/${invitationId}/decline`, {
+      method: 'PUT',
+    });
   }
 }
 
